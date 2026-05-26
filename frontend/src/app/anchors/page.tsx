@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 
-import { backendJSON } from "@/lib/backend";
+import { backendFetch, backendJSON, type UserOut } from "@/lib/backend";
 
 type AnchorOut = {
   id: number;
@@ -21,7 +22,17 @@ type AnchorOut = {
 
 type AnchorListOut = { items: AnchorOut[]; total: number };
 
-type SearchParams = Promise<{ q?: string; level?: string; authority?: string }>;
+type AnchorChangeOut = {
+  id: number;
+  anchor_id_new: number | null;
+  kind: string;
+  detected_at: string;
+  source_url: string | null;
+  summary: string | null;
+  triage_status: string;
+};
+
+type SearchParams = Promise<{ q?: string; level?: string; authority?: string; source_status?: string }>;
 
 const LEVELS = [
   { value: "", label: "Alle Level" },
@@ -38,6 +49,14 @@ const AUTHORITIES = [
   { value: "eba", label: "EBA" },
   { value: "bafin", label: "BaFin" },
   { value: "national_law", label: "Nationales Recht" },
+];
+
+const SOURCE_STATUSES = [
+  { value: "", label: "Alle Prüfstände" },
+  { value: "seed_unverified", label: "Seed, nicht geprüft" },
+  { value: "fetched_unverified", label: "Text geladen, Prüfung offen" },
+  { value: "verified", label: "Quelle geprüft" },
+  { value: "rejected", label: "Quelle zurückgewiesen" },
 ];
 
 function authorityBadge(authority: string): string {
@@ -71,15 +90,59 @@ export default async function AnchorsPage({
   if (params.q) query.set("q", params.q);
   if (params.level) query.set("level", params.level);
   if (params.authority) query.set("authority", params.authority);
+  if (params.source_status) query.set("source_status", params.source_status);
   query.set("limit", "200");
 
+  let user: UserOut | null = null;
   let data: AnchorListOut = { items: [], total: 0 };
+  let changes: AnchorChangeOut[] = [];
   let error: string | null = null;
   try {
+    user = await backendJSON<UserOut>("/me");
     data = await backendJSON<AnchorListOut>(`/anchors?${query.toString()}`);
+    if (user.role === "curator" || user.role === "admin") {
+      changes = await backendJSON<AnchorChangeOut[]>("/anchors/changes");
+    }
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
+
+  async function verifySource(formData: FormData) {
+    "use server";
+    const anchorId = String(formData.get("anchor_id"));
+    const fingerprint = String(formData.get("fingerprint"));
+    await backendFetch(`/anchors/${anchorId}/verify`, {
+      method: "POST",
+      body: JSON.stringify({ expected_fingerprint: fingerprint }),
+    });
+    revalidatePath("/anchors");
+  }
+
+  async function loadSupplementarySource(formData: FormData) {
+    "use server";
+    const anchorId = String(formData.get("anchor_id"));
+    await backendFetch(`/anchors/${anchorId}/source-text`, {
+      method: "POST",
+      body: JSON.stringify({
+        source_url: String(formData.get("source_url") ?? "").trim(),
+        version: String(formData.get("version") ?? "").trim(),
+        source_text: String(formData.get("source_text") ?? "").trim(),
+      }),
+    });
+    revalidatePath("/anchors");
+  }
+
+  async function rejectChange(formData: FormData) {
+    "use server";
+    const changeId = String(formData.get("change_id"));
+    await backendFetch(`/anchors/changes/${changeId}/triage`, {
+      method: "POST",
+      body: JSON.stringify({ decision: "rejected" }),
+    });
+    revalidatePath("/anchors");
+  }
+
+  const canCurate = user?.role === "curator" || user?.role === "admin";
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-10">
@@ -98,7 +161,33 @@ export default async function AnchorsPage({
         </div>
       </header>
 
-      <form method="get" className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-4">
+      {canCurate && changes.length > 0 && (
+        <section className="mt-6 rounded border border-amber-300 bg-amber-50 p-4">
+          <h2 className="text-sm font-semibold text-amber-950">Offene Quellenänderungen</h2>
+          <p className="mt-1 text-xs text-amber-900">
+            Eine Änderung wird durch Verifikation des zugehörigen Anchors freigegeben.
+            Zurückweisung sperrt die Quelle.
+          </p>
+          <ul className="mt-3 divide-y divide-amber-200">
+            {changes.map((change) => (
+              <li key={change.id} className="flex items-center justify-between gap-4 py-2 text-xs">
+                <span>
+                  Änderung {change.id} · Anchor {change.anchor_id_new ?? "keine Angabe"} ·{" "}
+                  {change.kind}
+                </span>
+                <form action={rejectChange}>
+                  <input type="hidden" name="change_id" value={change.id} />
+                  <button type="submit" className="rounded border border-amber-800 px-2 py-1">
+                    Zurückweisen
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <form method="get" className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-5">
         <input
           name="q"
           defaultValue={params.q ?? ""}
@@ -127,9 +216,20 @@ export default async function AnchorsPage({
             </option>
           ))}
         </select>
+        <select
+          name="source_status"
+          defaultValue={params.source_status ?? ""}
+          className="rounded border border-neutral-300 px-3 py-2 text-sm"
+        >
+          {SOURCE_STATUSES.map((status) => (
+            <option key={status.value} value={status.value}>
+              {status.label}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
-          className="sm:col-span-4 sm:w-auto sm:justify-self-start rounded bg-neutral-900 px-4 py-2 text-sm text-white"
+          className="sm:col-span-5 sm:w-auto sm:justify-self-start rounded bg-neutral-900 px-4 py-2 text-sm text-white"
         >
           Filtern
         </button>
@@ -172,6 +272,53 @@ export default async function AnchorsPage({
             )}
             {a.binding_force_note && (
               <p className="mt-1 text-xs italic text-neutral-500">{a.binding_force_note}</p>
+            )}
+            {canCurate && a.source_status === "fetched_unverified" && a.source_fingerprint && (
+              <form action={verifySource} className="mt-2">
+                <input type="hidden" name="anchor_id" value={a.id} />
+                <input type="hidden" name="fingerprint" value={a.source_fingerprint} />
+                <button
+                  type="submit"
+                  className="rounded border border-green-700 px-2 py-1 text-xs text-green-800"
+                >
+                  Fingerprint prüfen und freigeben
+                </button>
+              </form>
+            )}
+            {canCurate && !a.authority.startsWith("eu_") && (
+              <details className="mt-2 text-xs">
+                <summary className="cursor-pointer text-blue-700">
+                  Öffentlichen Quellentext laden
+                </summary>
+                <form action={loadSupplementarySource} className="mt-2 space-y-2 rounded bg-neutral-50 p-3">
+                  <input type="hidden" name="anchor_id" value={a.id} />
+                  <input
+                    required
+                    type="url"
+                    name="source_url"
+                    defaultValue={a.url ?? ""}
+                    placeholder="https://..."
+                    className="block w-full rounded border border-neutral-300 px-2 py-1"
+                  />
+                  <input
+                    required
+                    name="version"
+                    defaultValue={a.version === "unverified" ? "" : a.version}
+                    placeholder="Fassung oder Abrufdatum"
+                    className="block w-full rounded border border-neutral-300 px-2 py-1"
+                  />
+                  <textarea
+                    required
+                    name="source_text"
+                    rows={5}
+                    placeholder="Öffentlichen amtlichen Quellentext einfügen"
+                    className="block w-full rounded border border-neutral-300 px-2 py-1"
+                  />
+                  <button type="submit" className="rounded bg-neutral-900 px-2 py-1 text-white">
+                    Als prüfbedürftige Quelle speichern
+                  </button>
+                </form>
+              </details>
             )}
           </li>
         ))}

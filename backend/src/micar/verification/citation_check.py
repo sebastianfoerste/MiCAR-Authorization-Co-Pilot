@@ -9,7 +9,7 @@ Anything else fails the render hard. The renderer surfaces the failure as a
 red row in the artifacts UI. We never silently swap to a near-match; the wrong
 anchor in a filing is worse than no anchor.
 
-Note: in Phase 3 we keep the API in-memory friendly — pass an iterable of
+The API stays in-memory friendly: pass an iterable of
 Anchor rows alongside the citations. The renderer module fetches the anchor
 universe once per render and feeds it in.
 """

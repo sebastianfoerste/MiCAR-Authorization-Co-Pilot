@@ -1,7 +1,7 @@
 """Pydantic schemas for the API surface.
 
-Domain models live in `models.py` (SQLAlchemy). This file is the wire format.
-Kept thin in Phase 0 — only what /me + the mandate dashboard touches.
+Domain models live in `models.py` (SQLAlchemy). This file contains shared
+wire formats used by authentication and mandate routes.
 """
 from __future__ import annotations
 

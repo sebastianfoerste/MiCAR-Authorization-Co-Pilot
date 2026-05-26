@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from micar.api.access import load_accessible_mandate_or_404
 from micar.api.auth import get_current_user
+from micar.artifacts.package import validated_latest_template_uses
 from micar.compliance.audit import write_audit
 from micar.intake.validation import is_mandate_ready_for_generation
 from micar.models import IntakeSection, Mandate, MandateState, Track, UserRole, session_scope
@@ -143,6 +144,11 @@ def transition(
                     status_code=409,
                     detail={"reason": "intake_incomplete", "blocking": blocking},
                 )
+        if body.to_state == MandateState.APPROVED.value:
+            try:
+                validated_latest_template_uses(session, m.id)
+            except ValueError as exc:
+                raise HTTPException(status_code=409, detail=str(exc)) from exc
         m.state = body.to_state
         owner_id = _load_user_id(session, user.email)
         write_audit(

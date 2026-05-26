@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # LLM
     anthropic_api_key: SecretStr = Field(default=SecretStr(""))
-    # "anthropic" | "bedrock" | "vertex" — Phase 6 production picks Bedrock/Vertex
+    # "anthropic" | "bedrock" | "vertex"; production provider requires approval.
     llm_provider: str = "anthropic"
     llm_model_synthesis: str = "claude-opus-4-7"
     llm_model_default: str = "claude-sonnet-4-6"

@@ -1,9 +1,4 @@
-"""SQLAlchemy 2.0 ORM models for the full MiCAR Co-Pilot data model.
-
-All tables declared in the initial migration so later phases just consume them.
-Phase 0 only writes to `users` and `audit_events`; the rest sit empty until
-their respective phases land.
-"""
+"""SQLAlchemy 2.0 ORM models for the MiCAR Co-Pilot data model."""
 from __future__ import annotations
 
 from collections.abc import Iterator

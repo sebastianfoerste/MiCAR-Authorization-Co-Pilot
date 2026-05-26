@@ -1,0 +1,28 @@
+clause_key: programme_of_operations
+track: casp
+version: "0.1.0"
+title: "Tätigkeitsprogramm (Art. 62 MiCAR)"
+anchor_refs:
+  - "Art. 62 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 66 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - entity
+  - services_offered
+  - jurisdictions
+prose_skeleton: |
+  ## 1. Geschäftsmodell
+
+  {{ fact:entity.legal_name }} beabsichtigt folgendes Dienstleistungsangebot:
+  {{ fact:services_offered.service_description }}
+
+  ## 2. Kundengruppen und geografischer Umfang
+
+  Heimatmitgliedstaat: {{ fact:jurisdictions.home_state }}.
+  Zielmärkte: {{ fact:jurisdictions.target_host_states }}.
+
+  ## 3. Kundeninteressen
+
+  [Lawyer-Review: Prozesse für ehrliches, redliches und professionelles Handeln im
+   besten Interesse der Kunden entlang Art. 66 MiCAR konkret ausformulieren.]
+author_note: "Confirm business-model accuracy and passporting analysis before use."
+conditional_on_services: []

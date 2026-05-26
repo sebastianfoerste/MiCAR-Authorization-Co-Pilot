@@ -29,10 +29,13 @@ class CASPTrack:
             TemplateRef("authorization_application", "Antrag auf Zulassung nach Art. 62 MiCAR"),
             TemplateRef("programme_of_operations", "Programme of Operations (Art. 62 Abs. 2 lit. c)"),
             TemplateRef("governance", "Governance-Konzept (Art. 68)"),
-            TemplateRef("aml_programme", "AML-Programm (GwG + AMLR)"),
+            TemplateRef(
+                "aml_programme",
+                "AML/CFT-Kontrollen im Zulassungsantrag (Art. 62 Abs. 2 MiCAR)",
+            ),
             TemplateRef("conflicts_of_interest", "Interessenkonfliktrichtlinie (Art. 72)"),
             TemplateRef("complaints_handling", "Beschwerdemanagement (Art. 71)"),
-            TemplateRef("ict_dora", "ICT-Risikorahmen (DORA Art. 5 bis 15)"),
+            TemplateRef("ict_dora", "IKT-Organisation und Auslagerung (Art. 68, 73 MiCAR)"),
             TemplateRef(
                 "custody_policy",
                 "Verwahrungsrichtlinie (Art. 75)",

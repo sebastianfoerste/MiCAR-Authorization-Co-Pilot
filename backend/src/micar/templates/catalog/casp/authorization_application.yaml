@@ -1,0 +1,38 @@
+clause_key: authorization_application
+track: casp
+version: "0.1.0"
+title: "Antrag auf Zulassung als Anbieter von Kryptowerte-Dienstleistungen (Art. 62 MiCAR)"
+anchor_refs:
+  - "Art. 59 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 62 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 67 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - entity
+  - services_offered
+  - governance
+  - prudential
+prose_skeleton: |
+  ## 1. Antragsteller und Antrag
+
+  {{ fact:entity.legal_name }} ({{ fact:entity.legal_form }}) mit Hauptverwaltung in
+  {{ fact:entity.place_of_central_admin }} beantragt die Zulassung als Anbieter von
+  Kryptowerte-Dienstleistungen.
+
+  ## 2. Beantragte Dienstleistungen
+
+  Die beantragten Dienstleistungen werden wie folgt beschrieben:
+  {{ fact:services_offered.service_description }}
+
+  ## 3. Organisation und Aufsichtskapital
+
+  Die Geschäftsleitung umfasst {{ fact:governance.management_body_members }} Mitglieder.
+  Die vorhandenen Eigenmittel betragen EUR {{ fact:prudential.own_funds_actual_eur }};
+  als ermittelter Mindestbetrag wurden EUR {{ fact:prudential.own_funds_floor_eur }}
+  dokumentiert.
+
+  [Lawyer-Review: Vollständigkeit der in Art. 62 Abs. 2 MiCAR verlangten Angaben und
+   Unterlagen anhand der Anlagenliste prüfen.]
+author_note: |
+  Structural application cover draft only. Review the complete document list and
+  competent-authority filing format before approval.
+conditional_on_services: []

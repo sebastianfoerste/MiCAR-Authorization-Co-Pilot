@@ -1,0 +1,27 @@
+clause_key: reserve_policy_art
+track: art
+version: "0.1.0"
+title: "Vermögenswertreserve und Verwahrung (Art. 36 und 37 MiCAR)"
+anchor_refs:
+  - "Art. 36 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 37 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - issuer_entity_art
+  - reserve_art
+prose_skeleton: |
+  ## 1. Reservekonzept
+
+  {{ fact:issuer_entity_art.legal_name }} sieht folgende Zusammensetzung der
+  Vermögenswertreserve vor: {{ fact:reserve_art.reserve_composition }}.
+
+  ## 2. Verwahrung, Anlage und Liquidität
+
+  Verwahrungsregelung: {{ fact:reserve_art.custody_arrangements }}.
+  Anlagegrundsätze: {{ fact:reserve_art.investment_policy }}.
+  Liquiditätssteuerung: {{ fact:reserve_art.liquidity_management }}.
+  Prüfungsregelung: {{ fact:reserve_art.independent_audit_arrangements }}.
+
+  [Lawyer-Review: Reserveabgleich, Trennung, Verwahrstellen und Nachweisführung
+   entlang des finalen Produkt- und Zahlungsflusses prüfen.]
+author_note: "Reserve structure requires treasury and custody evidence review."
+conditional_on_services: []

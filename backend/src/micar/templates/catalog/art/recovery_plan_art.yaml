@@ -1,0 +1,24 @@
+clause_key: recovery_plan_art
+track: art
+version: "0.1.0"
+title: "Sanierungsplan (Art. 46 MiCAR)"
+anchor_refs:
+  - "Art. 46 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - issuer_entity_art
+  - recovery_art
+prose_skeleton: |
+  ## 1. Sanierungsrahmen
+
+  Emittent: {{ fact:issuer_entity_art.legal_name }}.
+  Vorgesehene Sanierungsmaßnahmen:
+  {{ fact:recovery_art.recovery_measures }}.
+
+  ## 2. Auslöser und Eskalation
+
+  {{ fact:recovery_art.trigger_and_escalation_framework }}
+
+  [Lawyer-Review: Umsetzbarkeit, Governance, Szenarien, Kommunikationswege und
+   Aktualisierungsverfahren gemäß Art. 46 MiCAR ausarbeiten.]
+author_note: "Requires governance and financial-resilience review."
+conditional_on_services: []

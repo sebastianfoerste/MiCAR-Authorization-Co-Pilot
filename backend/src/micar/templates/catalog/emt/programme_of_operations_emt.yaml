@@ -1,0 +1,34 @@
+clause_key: programme_of_operations_emt
+track: emt
+version: "0.1.0"
+title: "Emittentenprogramm und MiCAR-Umsetzung (Art. 48, 54 und 55 MiCAR)"
+anchor_refs:
+  - "Art. 48 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 54 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 55 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - issuer_entity_emt
+  - token_emt
+  - funds_emt
+  - recovery_emt
+prose_skeleton: |
+  ## 1. Emittentenstellung und Produkt
+
+  {{ fact:issuer_entity_emt.legal_name }} beschreibt seinen regulatorischen
+  Status wie folgt: {{ fact:issuer_entity_emt.regulatory_status }}.
+  Der E-Geld-Token {{ fact:token_emt.token_name }} bezieht sich auf
+  {{ fact:token_emt.official_currency_reference }}.
+
+  ## 2. Geldbeträge und Krisenvorsorge
+
+  Behandlung entgegengenommener Geldbeträge:
+  {{ fact:funds_emt.received_funds_process }}.
+  Sanierungsmaßnahmen: {{ fact:recovery_emt.recovery_measures }}.
+  Rücktauschplanmaßnahmen: {{ fact:recovery_emt.redemption_plan_measures }}.
+
+  [Lawyer-Review: Dieses Arbeitspapier auf die konkrete EMI- oder
+   Kreditinstitutszulassung sowie alle zusätzlichen Rechtsgrundlagen abstimmen.]
+author_note: |
+  Internal assembly document. It does not itself represent a MiCAR-defined
+  standalone filing document or replace supplementary source review.
+conditional_on_services: []

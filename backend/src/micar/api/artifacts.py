@@ -1,6 +1,6 @@
 """Artifact endpoints — trigger render, list, download.
 
-Phase 3 surface:
+Current surface:
   POST /mandates/{id}/render          — render every template applicable to the
                                         mandate; return per-template results.
   POST /mandates/{id}/package         — assemble a downloadable zip of all
@@ -10,7 +10,9 @@ Phase 3 surface:
 """
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
@@ -20,8 +22,17 @@ from sqlalchemy import select
 from micar.api.access import load_accessible_mandate_or_404
 from micar.api.auth import get_current_user
 from micar.artifacts.package import build_package
+from micar.compliance.audit import write_audit
 from micar.intake.schema import CASPServiceCode
-from micar.models import Artifact, Mandate, MandateState, session_scope
+from micar.models import (
+    Anchor,
+    Artifact,
+    Mandate,
+    MandateState,
+    Template,
+    TemplateUse,
+    session_scope,
+)
 from micar.schemas import UserOut
 from micar.templates.registry import TemplateDef, load_registry
 from micar.templates.renderer import RenderOutcome, render_template
@@ -67,6 +78,35 @@ class ArtifactOut(BaseModel):
     version: int
     sha256: str | None
     created_at: str
+
+
+class CitationProvenanceOut(BaseModel):
+    citation: str
+    anchor_id: int | None
+    source_status: str | None
+    url: str | None
+
+
+class ReviewUseOut(BaseModel):
+    id: int
+    clause_key: str
+    title: str
+    template_version: str
+    lawyer_review_status: str
+    flagged_by_change_id: int | None
+    rendered_prose: str | None
+    rendered_at: datetime | None
+    citations: list[CitationProvenanceOut]
+
+
+class ReviewDecisionIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    decision: Literal["approved", "rejected"]
+
+
+class ReviewDecisionOut(BaseModel):
+    template_use_id: int
+    lawyer_review_status: str
 
 
 def _applicable_templates(mandate: Mandate, services: list[str]) -> list[TemplateDef]:
@@ -131,6 +171,61 @@ def _outcome_to_result(template: TemplateDef, outcome: RenderOutcome) -> RenderR
     )
 
 
+def _latest_template_uses(session, mandate_id: int) -> list[TemplateUse]:
+    rows = (
+        session.execute(
+            select(TemplateUse)
+            .where(TemplateUse.mandate_id == mandate_id)
+            .order_by(TemplateUse.id.desc())
+        )
+        .scalars()
+        .all()
+    )
+    latest: dict[int, TemplateUse] = {}
+    for row in rows:
+        latest.setdefault(row.template_id, row)
+    return sorted(latest.values(), key=lambda row: row.id)
+
+
+def _review_use_out(session, use: TemplateUse) -> ReviewUseOut:
+    template = session.get(Template, use.template_id)
+    citations = use.citations or []
+    anchor_ids = [entry.get("anchor_id") for entry in citations if entry.get("anchor_id")]
+    anchors = (
+        session.execute(select(Anchor).where(Anchor.id.in_(anchor_ids))).scalars().all()
+        if anchor_ids
+        else []
+    )
+    by_id = {anchor.id: anchor for anchor in anchors}
+    return ReviewUseOut(
+        id=use.id,
+        clause_key=template.clause_key if template else str(use.template_id),
+        title=template.title if template else f"Klausel {use.template_id}",
+        template_version=use.template_version,
+        lawyer_review_status=use.lawyer_review_status,
+        flagged_by_change_id=use.flagged_by_change_id,
+        rendered_prose=use.rendered_prose,
+        rendered_at=use.rendered_at,
+        citations=[
+            CitationProvenanceOut(
+                citation=entry.get("citation", ""),
+                anchor_id=entry.get("anchor_id"),
+                source_status=(
+                    by_id[entry["anchor_id"]].source_status
+                    if entry.get("anchor_id") in by_id
+                    else None
+                ),
+                url=(
+                    by_id[entry["anchor_id"]].url
+                    if entry.get("anchor_id") in by_id
+                    else None
+                ),
+            )
+            for entry in citations
+        ],
+    )
+
+
 @router.post("/mandates/{mandate_id}/render", response_model=RenderRunOut)
 def render_mandate(
     mandate_id: int, user: UserOut = Depends(get_current_user)
@@ -156,6 +251,68 @@ def render_mandate(
         if ok_count:
             m.state = MandateState.GENERATED.value
         return RenderRunOut(total=len(results), ok=ok_count, failed=len(results) - ok_count, results=results)
+
+
+@router.get("/mandates/{mandate_id}/renders", response_model=list[ReviewUseOut])
+def list_rendered_clauses(
+    mandate_id: int, user: UserOut = Depends(get_current_user)
+) -> list[ReviewUseOut]:
+    with session_scope() as session:
+        load_accessible_mandate_or_404(session, mandate_id, user)
+        return [_review_use_out(session, use) for use in _latest_template_uses(session, mandate_id)]
+
+
+@router.post(
+    "/mandates/{mandate_id}/renders/{template_use_id}/review",
+    response_model=ReviewDecisionOut,
+)
+def review_rendered_clause(
+    mandate_id: int,
+    template_use_id: int,
+    body: ReviewDecisionIn,
+    user: UserOut = Depends(get_current_user),
+) -> ReviewDecisionOut:
+    with session_scope() as session:
+        load_accessible_mandate_or_404(session, mandate_id, user)
+        use = session.get(TemplateUse, template_use_id)
+        if use is None or use.mandate_id != mandate_id:
+            raise HTTPException(status_code=404, detail="rendered clause not found")
+        latest_ids = {row.id for row in _latest_template_uses(session, mandate_id)}
+        if use.id not in latest_ids:
+            raise HTTPException(status_code=409, detail="only latest clause versions can be reviewed")
+        if body.decision == "approved" and use.lawyer_review_status == "citation_failed":
+            raise HTTPException(status_code=409, detail="citation-failed clause cannot be approved")
+        if body.decision == "approved" and use.flagged_by_change_id is not None:
+            raise HTTPException(status_code=409, detail="source-changed clause must be regenerated")
+        if body.decision == "approved":
+            anchor_ids = {
+                entry.get("anchor_id")
+                for entry in (use.citations or [])
+                if entry.get("anchor_id") is not None
+            }
+            anchors = (
+                session.execute(select(Anchor).where(Anchor.id.in_(anchor_ids))).scalars().all()
+                if anchor_ids
+                else []
+            )
+            if not anchor_ids or len(anchors) != len(anchor_ids) or any(
+                anchor.source_status != "verified" for anchor in anchors
+            ):
+                raise HTTPException(
+                    status_code=409,
+                    detail="all cited sources must be verified before approval",
+                )
+        use.lawyer_review_status = body.decision
+        write_audit(
+            session,
+            kind="render.clause.reviewed",
+            actor_id=user.id,
+            mandate_id=mandate_id,
+            payload={"template_use_id": use.id, "decision": body.decision},
+        )
+        return ReviewDecisionOut(
+            template_use_id=use.id, lawyer_review_status=use.lawyer_review_status
+        )
 
 
 @router.post("/mandates/{mandate_id}/package", response_model=PackageOut)

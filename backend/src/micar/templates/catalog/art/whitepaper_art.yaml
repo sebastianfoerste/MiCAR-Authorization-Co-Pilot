@@ -1,0 +1,30 @@
+clause_key: whitepaper_art
+track: art
+version: "0.1.0"
+title: "Kryptowerte-Whitepaper für vermögenswertereferenzierte Token (Art. 19 MiCAR)"
+anchor_refs:
+  - "Art. 19 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 30 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 39 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - issuer_entity_art
+  - token_art
+  - redemption_art
+prose_skeleton: |
+  ## 1. Emittent und Token
+
+  Emittent: {{ fact:issuer_entity_art.legal_name }}.
+  Token: {{ fact:token_art.token_name }} ({{ fact:token_art.token_symbol }}).
+  Referenzwerte: {{ fact:token_art.reference_assets_description }}.
+
+  ## 2. Ausgabe und Inhaberrechte
+
+  Geplante Ausgabe und Verteilung:
+  {{ fact:token_art.issuance_and_distribution_plan }}.
+  Rücktauschrechte:
+  {{ fact:redemption_art.redemption_rights_description }}.
+
+  [Lawyer-Review: Pflichtangaben, Risikodarstellungen, Veröffentlichungsformat
+   und Sprachfassungen anhand Art. 19 MiCAR und des einschlägigen Anhangs prüfen.]
+author_note: "Skeleton for legal review; it is not a complete public whitepaper."
+conditional_on_services: []

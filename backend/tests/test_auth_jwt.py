@@ -14,6 +14,7 @@ from fastapi import HTTPException
 
 from micar.api.auth import _decode, _provision_or_touch
 from micar.config import get_settings
+from micar.models import User
 
 
 def _mint(secret: str, *, iss: str, aud: str, sub: str = "user@example.com") -> str:
@@ -106,5 +107,54 @@ def test_provisioning_denies_empty_allowlist_without_dev_override(monkeypatch) -
         with pytest.raises(HTTPException) as exc:
             _provision_or_touch(None, email="user@example.com", name=None)  # type: ignore[arg-type]
         assert exc.value.status_code == 403
+    finally:
+        get_settings.cache_clear()
+
+
+class _Result:
+    def __init__(self, *, one_or_none=None, one=None) -> None:
+        self._one_or_none = one_or_none
+        self._one = one
+
+    def scalar_one_or_none(self):
+        return self._one_or_none
+
+    def scalar_one(self):
+        return self._one
+
+
+class _ConcurrentProvisionSession:
+    def __init__(self, existing_user: User) -> None:
+        self.existing_user = existing_user
+        self.calls = 0
+        self.added = []
+
+    def execute(self, _statement):
+        self.calls += 1
+        if self.calls in {1, 2}:
+            return _Result(one_or_none=None)
+        return _Result(one=self.existing_user)
+
+    def add(self, row) -> None:
+        self.added.append(row)
+
+    def flush(self) -> None:
+        return None
+
+
+def test_concurrent_provisioning_reloads_conflicting_user_without_duplicate_audit(monkeypatch) -> None:
+    monkeypatch.setenv("USER_EMAIL_ALLOWLIST", "")
+    monkeypatch.setenv("ALLOW_UNRESTRICTED_DEV_AUTH", "true")
+    get_settings.cache_clear()
+    user = User(id=7, email="user@example.com", role="lawyer", name=None)
+    session = _ConcurrentProvisionSession(user)
+    try:
+        result = _provision_or_touch(  # type: ignore[arg-type]
+            session, email="user@example.com", name="Test User"
+        )
+        assert result is user
+        assert user.name == "Test User"
+        assert user.last_login_at is not None
+        assert session.added == []
     finally:
         get_settings.cache_clear()

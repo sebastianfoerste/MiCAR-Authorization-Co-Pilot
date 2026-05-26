@@ -112,3 +112,92 @@ def test_mandate_ready_gate_passes_when_all_complete() -> None:
     }
     ok, blocking = is_mandate_ready_for_generation("casp", sections)
     assert ok, blocking
+
+
+def test_art_mandate_ready_gate_passes_with_issuer_sections() -> None:
+    sections: dict[str, dict[str, object] | None] = {
+        "issuer_entity_art": {
+            "legal_name": "Reference Token AG",
+            "legal_form": "AG",
+            "registered_office": "Frankfurt am Main",
+            "home_member_state": "DE",
+            "regulatory_status": "Antragsteller",
+            "contact_person_name": "M. Beispiel",
+            "contact_person_email": "m@example.com",
+        },
+        "token_art": {
+            "token_name": "Reference Basket Token",
+            "token_symbol": "RBT",
+            "reference_assets_description": "Korb aus EUR und Anleihen.",
+            "issuance_and_distribution_plan": "Primärausgabe über eigene Plattform.",
+            "target_holders_description": "Professionelle und private Inhaber.",
+            "whitepaper_draft_available": True,
+        },
+        "governance_art": {
+            "management_body_qualifications": "Leitungserfahrung in Zahlungsdiensten.",
+            "organisational_structure_documented": True,
+            "conflicts_policy_documented": True,
+            "complaint_handling_documented": True,
+            "operational_risk_controls_documented": True,
+        },
+        "reserve_art": {
+            "reserve_composition": "Sichteinlagen und liquide Wertpapiere.",
+            "custody_arrangements": "Verwahrung bei Kreditinstituten.",
+            "investment_policy": "Liquiditätsorientierte Anlage.",
+            "liquidity_management": "Tägliche Liquiditätsprüfung.",
+            "independent_audit_arrangements": "Jährliche Prüfung.",
+        },
+        "redemption_art": {
+            "redemption_rights_description": "Rücktauschrecht nach Bedingungen.",
+            "valuation_and_payment_mechanics": "Bewertung und Zahlung in EUR.",
+            "holder_communications_plan": "Elektronische Information.",
+        },
+        "recovery_art": {
+            "recovery_measures": "Liquiditäts- und Emissionsmaßnahmen.",
+            "redemption_plan_measures": "Geordneter Rücktausch.",
+            "trigger_and_escalation_framework": "Schwellenwerte und Eskalation.",
+            "wind_down_responsibilities": "Geschäftsleitung und Operations.",
+        },
+    }
+    ok, blocking = is_mandate_ready_for_generation("art", sections)
+    assert ok, blocking
+
+
+def test_emt_mandate_ready_gate_passes_with_issuer_sections() -> None:
+    sections: dict[str, dict[str, object] | None] = {
+        "issuer_entity_emt": {
+            "legal_name": "Euro Token Bank AG",
+            "legal_form": "AG",
+            "registered_office": "Berlin",
+            "home_member_state": "DE",
+            "regulatory_status": "E-Geld-Institut",
+            "contact_person_name": "E. Beispiel",
+            "contact_person_email": "e@example.com",
+        },
+        "token_emt": {
+            "token_name": "Euro Token",
+            "token_symbol": "EURT",
+            "official_currency_reference": "EUR",
+            "issuance_and_distribution_plan": "Ausgabe nach Geldeingang.",
+            "whitepaper_draft_available": True,
+        },
+        "funds_emt": {
+            "received_funds_process": "Zahlungskonto und täglicher Abgleich.",
+            "investment_arrangements": "Konservative liquide Anlage.",
+            "safeguarding_arrangements": "Gesonderte Sicherung.",
+            "liquidity_controls": "Tägliche Überwachung.",
+        },
+        "redemption_emt": {
+            "issue_at_par_process": "Ausgabe zum Nennwert.",
+            "redemption_at_par_process": "Rücktausch zum Nennwert.",
+            "fees_or_conditions_description": "Keine zusätzlichen Gebühren.",
+            "holder_communications_plan": "Digitale Mitteilung.",
+        },
+        "recovery_emt": {
+            "recovery_measures": "Liquiditätsmaßnahmen.",
+            "redemption_plan_measures": "Rücktauschplan.",
+            "trigger_and_escalation_framework": "Trigger und Governance.",
+        },
+    }
+    ok, blocking = is_mandate_ready_for_generation("emt", sections)
+    assert ok, blocking

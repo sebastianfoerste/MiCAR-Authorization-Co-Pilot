@@ -92,8 +92,8 @@ class GovernanceSection(BaseModel):
     organisational_structure_chart_attached: bool
     three_lines_of_defence: bool = Field(
         description=(
-            "Aufbau gemäß BAIT-Logik: 1st Line operations, 2nd Line risk/compliance, "
-            "3rd Line internal audit."
+            "Dokumentierte Aufbauorganisation mit operativen Einheiten, "
+            "Risikomanagement/Compliance und interner Revision."
         )
     )
 
@@ -172,7 +172,143 @@ class JurisdictionsSection(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Registry: section_key → model
+# ART sections
+# ---------------------------------------------------------------------------
+
+
+class IssuerEntitySection(BaseModel):
+    """Issuer identity and regulatory standing for ART and EMT workflows."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    legal_name: str = Field(min_length=1)
+    legal_form: str = Field(description="z. B. GmbH, AG, SE")
+    registered_office: str
+    home_member_state: str = Field(description="ISO-3166-1 alpha-2, z. B. DE.")
+    register_number: str | None = None
+    regulatory_status: str = Field(
+        description="Bestehende Zulassung oder vorgesehener Zulassungsweg des Emittenten."
+    )
+    contact_person_name: str
+    contact_person_email: str
+
+
+class ARTTokenSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    token_name: str = Field(min_length=1)
+    token_symbol: str = Field(min_length=1)
+    reference_assets_description: str = Field(
+        description="Beschreibung der Werte, Rechte oder Kombinationen, auf die sich der Token bezieht."
+    )
+    issuance_and_distribution_plan: str
+    target_holders_description: str
+    whitepaper_draft_available: bool
+
+
+class ARTGovernanceSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    management_body_qualifications: str
+    organisational_structure_documented: bool
+    conflicts_policy_documented: bool
+    complaint_handling_documented: bool
+    operational_risk_controls_documented: bool
+
+
+class ARTReserveSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    reserve_composition: str = Field(
+        description="Vorgesehene Zusammensetzung der Vermögenswertreserve."
+    )
+    custody_arrangements: str
+    investment_policy: str
+    liquidity_management: str
+    independent_audit_arrangements: str
+
+
+class ARTRedemptionSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    redemption_rights_description: str
+    valuation_and_payment_mechanics: str
+    holder_communications_plan: str
+
+
+class ARTRecoverySection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    recovery_measures: str
+    redemption_plan_measures: str
+    trigger_and_escalation_framework: str
+    wind_down_responsibilities: str
+
+
+ART_SECTIONS: dict[str, type[BaseModel]] = {
+    "issuer_entity_art": IssuerEntitySection,
+    "token_art": ARTTokenSection,
+    "governance_art": ARTGovernanceSection,
+    "reserve_art": ARTReserveSection,
+    "redemption_art": ARTRedemptionSection,
+    "recovery_art": ARTRecoverySection,
+}
+
+
+# ---------------------------------------------------------------------------
+# EMT sections
+# ---------------------------------------------------------------------------
+
+
+class EMTTokenSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    token_name: str = Field(min_length=1)
+    token_symbol: str = Field(min_length=1)
+    official_currency_reference: str = Field(
+        description="Amtliche Währung, auf die der E-Geld-Token Bezug nimmt."
+    )
+    issuance_and_distribution_plan: str
+    whitepaper_draft_available: bool
+
+
+class EMTFundsSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    received_funds_process: str
+    investment_arrangements: str
+    safeguarding_arrangements: str
+    liquidity_controls: str
+
+
+class EMTRedemptionSection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    issue_at_par_process: str
+    redemption_at_par_process: str
+    fees_or_conditions_description: str
+    holder_communications_plan: str
+
+
+class EMTRecoverySection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    recovery_measures: str
+    redemption_plan_measures: str
+    trigger_and_escalation_framework: str
+
+
+EMT_SECTIONS: dict[str, type[BaseModel]] = {
+    "issuer_entity_emt": IssuerEntitySection,
+    "token_emt": EMTTokenSection,
+    "funds_emt": EMTFundsSection,
+    "redemption_emt": EMTRedemptionSection,
+    "recovery_emt": EMTRecoverySection,
+}
+
+
+# ---------------------------------------------------------------------------
+# Registry: section_key -> model
 # ---------------------------------------------------------------------------
 
 CASP_SECTIONS: dict[str, type[BaseModel]] = {
@@ -187,13 +323,15 @@ CASP_SECTIONS: dict[str, type[BaseModel]] = {
     "jurisdictions": JurisdictionsSection,
 }
 
+SECTIONS_BY_TRACK: dict[str, dict[str, type[BaseModel]]] = {
+    "casp": CASP_SECTIONS,
+    "art": ART_SECTIONS,
+    "emt": EMT_SECTIONS,
+}
+
 
 def schema_for(track: str, section_key: str) -> type[BaseModel] | None:
-    if track == "casp":
-        return CASP_SECTIONS.get(section_key)
-    # EMT and ART are stubbed in Phase 4. Until then they return None — the
-    # track abstraction surfaces this as "section not in this track".
-    return None
+    return SECTIONS_BY_TRACK.get(track, {}).get(section_key)
 
 
 SectionKey = Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]*$", max_length=64)]

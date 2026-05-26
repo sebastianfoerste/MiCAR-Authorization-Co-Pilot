@@ -52,14 +52,16 @@ export default async function MandatesPage() {
       <section className="mt-8">
         {mandates.length === 0 ? (
           <div className="rounded border border-dashed border-neutral-300 p-10 text-center text-sm text-neutral-500">
-            Noch keine Mandate. Anlage erfolgt in Phase 2.
+            Noch keine Mandate. Lege ein Mandat für CASP, ART oder EMT an.
           </div>
         ) : (
           <ul className="divide-y divide-neutral-200">
             {mandates.map((m) => (
               <li key={m.id} className="py-3">
                 <div className="flex items-baseline justify-between">
-                  <span className="font-medium">{m.name}</span>
+                  <Link href={`/mandates/${m.id}`} className="font-medium text-blue-700 underline">
+                    {m.name}
+                  </Link>
                   <span className="text-xs uppercase tracking-wide text-neutral-500">
                     {m.track} · {m.state}
                   </span>

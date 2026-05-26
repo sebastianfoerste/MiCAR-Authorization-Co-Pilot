@@ -55,7 +55,7 @@ function inputForProperty(
   }
 
   if (primary === "array") {
-    // Comma-separated entry — adequate for Phase 2; richer UI later.
+    // Arrays are captured as comma-separated entries in the current intake UI.
     const val = Array.isArray(current) ? current.join(", ") : "";
     return (
       <label className="block">

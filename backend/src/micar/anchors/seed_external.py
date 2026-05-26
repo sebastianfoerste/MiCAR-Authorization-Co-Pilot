@@ -81,8 +81,8 @@ def eba_micar_qa_anchors() -> list[SeedAnchor]:
 def bafin_anchors() -> list[SeedAnchor]:
     """BaFin Merkblätter and Rundschreiben relevant for MiCAR licensing.
 
-    Conservative seed — covers the documents most often referenced in CASP / EMT
-    intake calls. Live ingest (Phase 5) keeps versions in sync.
+    Conservative seed covering documents potentially relevant to CASP or EMT
+    intake. Public source text must be loaded and verified before use.
     """
     anchors: list[SeedAnchor] = []
 

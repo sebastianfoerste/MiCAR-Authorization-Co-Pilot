@@ -19,6 +19,7 @@ import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from micar.compliance.audit import write_audit
@@ -67,13 +68,40 @@ def _provision_or_touch(session: Session, *, email: str, name: str | None) -> Us
             status_code=status.HTTP_403_FORBIDDEN, detail="email not allowlisted"
         )
 
-    user = session.execute(select(User).where(User.email == email_norm)).scalar_one_or_none()
     now = datetime.now(UTC)
+    user = session.execute(select(User).where(User.email == email_norm)).scalar_one_or_none()
     if user is None:
-        user = User(email=email_norm, name=name, role=UserRole.LAWYER.value, last_login_at=now)
-        session.add(user)
-        session.flush()
-        write_audit(session, kind="user.provisioned", actor_id=user.id, payload={"email": email_norm})
+        new_id = session.execute(
+            insert(User)
+            .values(
+                email=email_norm,
+                name=name,
+                role=UserRole.LAWYER.value,
+                last_login_at=now,
+            )
+            .on_conflict_do_nothing(index_elements=[User.email])
+            .returning(User.id)
+        ).scalar_one_or_none()
+        if new_id is None:
+            user = session.execute(
+                select(User).where(User.email == email_norm)
+            ).scalar_one()
+        else:
+            user = session.get(User, new_id)
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="provisioned user could not be loaded",
+                )
+            write_audit(
+                session,
+                kind="user.provisioned",
+                actor_id=user.id,
+                payload={"email": email_norm},
+            )
+        user.last_login_at = now
+        if name and not user.name:
+            user.name = name
     else:
         user.last_login_at = now
         if name and not user.name:

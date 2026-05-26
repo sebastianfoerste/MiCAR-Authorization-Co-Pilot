@@ -16,7 +16,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from micar.intake.schema import CASP_SECTIONS, schema_for
+from micar.intake.schema import SECTIONS_BY_TRACK, schema_for
 
 
 def is_section_complete(
@@ -40,9 +40,7 @@ def is_section_complete(
 
 
 def required_section_keys(track: str) -> list[str]:
-    if track == "casp":
-        return list(CASP_SECTIONS.keys())
-    return []
+    return list(SECTIONS_BY_TRACK.get(track, {}).keys())
 
 
 def is_mandate_ready_for_generation(
@@ -50,7 +48,7 @@ def is_mandate_ready_for_generation(
 ) -> tuple[bool, list[str]]:
     needed = required_section_keys(track)
     if not needed:
-        return False, [f"Track '{track}' ist noch nicht implementiert."]
+        return False, [f"Track '{track}' ist nicht implementiert."]
     problems: list[str] = []
     for key in needed:
         ok, errs = is_section_complete(track, key, sections_by_key.get(key))

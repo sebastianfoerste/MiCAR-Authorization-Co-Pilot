@@ -1,4 +1,4 @@
-"""EMT track stub — Art. 48 ff. MiCAR. Full schema lands in Phase 4."""
+"""EMT issuer workflow under Art. 48 ff. MiCAR."""
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -11,7 +11,13 @@ from micar.tracks.base import TemplateRef
 class EMTTrack:
     code: str = "emt"
     label_de: str = "E-Money Token Emittent, Art. 48 ff. MiCAR"
-    required_section_keys: tuple[str, ...] = ()  # populated in Phase 4
+    required_section_keys: tuple[str, ...] = (
+        "issuer_entity_emt",
+        "token_emt",
+        "funds_emt",
+        "redemption_emt",
+        "recovery_emt",
+    )
 
     def templates(self) -> Iterable[TemplateRef]:
         return [
@@ -22,6 +28,7 @@ class EMTTrack:
             ),
             TemplateRef("redemption_at_par", "Rücknahme zum Nennwert (Art. 49 Abs. 1)"),
             TemplateRef(
-                "programme_of_operations_emt", "Programme of Operations EMT"
+                "programme_of_operations_emt",
+                "Emittentenprogramm und MiCAR-Umsetzung (Art. 48, 54 und 55)",
             ),
         ]

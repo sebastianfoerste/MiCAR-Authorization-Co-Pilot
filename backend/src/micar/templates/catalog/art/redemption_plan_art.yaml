@@ -1,0 +1,26 @@
+clause_key: redemption_plan_art
+track: art
+version: "0.1.0"
+title: "Rücktauschplan (Art. 47 MiCAR)"
+anchor_refs:
+  - "Art. 39 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 47 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - issuer_entity_art
+  - redemption_art
+  - recovery_art
+prose_skeleton: |
+  ## 1. Rechte der Inhaber
+
+  {{ fact:redemption_art.redemption_rights_description }}
+
+  ## 2. Verfahren und Abwicklung
+
+  Bewertung und Zahlung: {{ fact:redemption_art.valuation_and_payment_mechanics }}.
+  Kommunikation: {{ fact:redemption_art.holder_communications_plan }}.
+  Abwicklungsmaßnahmen: {{ fact:recovery_art.redemption_plan_measures }}.
+
+  [Lawyer-Review: Rangfolge, operative Kapazität, Reserveverwertung und
+   Behördenkommunikation im Rücktauschszenario prüfen.]
+author_note: "Requires operational evidence and scenario review."
+conditional_on_services: []

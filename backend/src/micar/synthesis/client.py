@@ -80,12 +80,19 @@ def _lookup_dotted(d: dict[str, Any], path: str) -> Any | None:
 def _render_stub(payload: SynthesisInput) -> RenderedClause:
     """Deterministic placeholder. Fact substitution only, without fabrication."""
 
+    def render_value(value: Any) -> str:
+        if isinstance(value, bool):
+            return "ja" if value else "nein"
+        if isinstance(value, list):
+            return ", ".join(str(item) for item in value) if value else "keine"
+        return str(value)
+
     def sub(match: re.Match[str]) -> str:
         key = match.group(1).strip()
         value = _lookup_dotted(payload.facts, key)
         if value is None:
             return match.group(0)
-        return str(value)
+        return render_value(value)
 
     body = re.sub(r"\{\{\s*fact:([a-zA-Z0-9_.]+)\s*\}\}", sub, payload.template_skeleton)
 

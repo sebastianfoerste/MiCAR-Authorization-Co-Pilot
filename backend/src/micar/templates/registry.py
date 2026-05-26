@@ -4,7 +4,7 @@ Templates are YAML files under `templates/catalog/<track>/<clause_key>.yaml`.
 Each describes one renderable clause: which anchors it must cite, which facts
 it consumes, and a skeleton the lawyer-authored prompt fills in.
 
-YAML shape (Phase 3):
+YAML shape:
 
   clause_key: governance
   track: casp

@@ -15,7 +15,7 @@ required_sections:
   - entity
   - governance
 
-# Prose skeleton — structural only. {{ fact:... }} placeholders are substituted
+# Prose skeleton: structural only. {{ fact:... }} placeholders are substituted
 # by the renderer (stub mode does literal substitution; LLM mode is instructed to
 # fill in concrete prose grounded in the facts and anchors).
 #
@@ -35,7 +35,7 @@ prose_skeleton: |
 
   ## 2. Aufbauorganisation
 
-  Der Antragsteller arbeitet nach dem Drei-Linien-Modell:
+  Die dokumentierte Aufbauorganisation sieht ein Drei-Linien-Modell vor:
   - 1. Linie: operative Einheiten
   - 2. Linie: Risikomanagement und Compliance
   - 3. Linie: interne Revision
@@ -47,14 +47,17 @@ prose_skeleton: |
   ## 3. Auslagerung
 
   [Hier füllt das gunnercooke-Team die Auslagerungsrichtlinie entlang
-   Art. 73 MiCAR aus. Zu adressieren: kritische Funktionen, Drittdienstleister-
-   Register (DORA Art. 28), Aufsichtszugriff.]
+   Art. 73 MiCAR aus. Zu adressieren: kritische Funktionen, Dienstleisterregister
+   und Aufsichtszugriff. Zusätzliche DORA-Aussagen erfordern geprüfte DORA-Anker.]
 
   ## 4. Aufsichtsrechtliche Anforderungen
 
-  Die laufenden aufsichtsrechtlichen Anforderungen nach Art. 67 MiCAR werden
-  durch die in Sektion „prudential" dokumentierten Eigenmittel und durch
-  die in Sektion „ict_dora" beschriebene Resilienzarchitektur erfüllt.
+  Zur Prüfung der aufsichtsrechtlichen Anforderungen nach Art. 67 MiCAR liegen
+  die in Sektion "prudential" dokumentierten Eigenmittelangaben und die in
+  Sektion "ict_dora" beschriebenen organisatorischen Angaben vor.
+
+  [Lawyer-Review: Erfüllung der Anforderungen anhand der Nachweise und der
+   beantragten Dienstleistungen abschließend beurteilen.]
 
 author_note: |
   Lawyer review required before any client-facing render. Prose skeleton is structural;

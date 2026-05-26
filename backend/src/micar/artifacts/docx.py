@@ -1,8 +1,8 @@
 """DOCX assembly using python-docx.
 
-Phase 3 produces one DOCX per template_use *and* one combined package DOCX
+The package builder produces a combined DOCX
 that strings the rendered clauses together with a cover page and a table of
-contents placeholder. The package step is intentionally simple — Word users
+contents placeholder. The package step is intentionally simple; Word users
 update the ToC with F9 after opening.
 """
 from __future__ import annotations

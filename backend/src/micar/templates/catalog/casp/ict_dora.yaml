@@ -1,0 +1,31 @@
+clause_key: ict_dora
+track: casp
+version: "0.1.0"
+title: "IKT-Organisation und Auslagerung (Art. 68 und 73 MiCAR)"
+anchor_refs:
+  - "Art. 68 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 73 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - entity
+  - ict_dora
+prose_skeleton: |
+  ## 1. IKT-Kontrollrahmen
+
+  {{ fact:entity.legal_name }} dokumentiert einen IKT-Risikokontrollrahmen:
+  {{ fact:ict_dora.ict_risk_framework_documented }}.
+  Ein Verfahren für Vorfallsmeldungen ist dokumentiert:
+  {{ fact:ict_dora.incident_reporting_procedure }}.
+
+  ## 2. Auslagerung
+
+  Ein Drittdienstleisterregister wird geführt:
+  {{ fact:ict_dora.third_party_register_kept }}.
+  Geschäftskontinuitätsmaßnahmen wurden in den letzten zwölf Monaten getestet:
+  {{ fact:ict_dora.business_continuity_plan_tested_last_12m }}.
+
+  [Lawyer-Review: Zusätzliche DORA-Anforderungen erst nach Einbindung geprüfter
+   DORA-Anker als verbindliche Grundlage ausformulieren.]
+author_note: |
+  The template is grounded only in cited MiCAR articles. DORA-specific analysis
+  requires separately reviewed source anchors.
+conditional_on_services: []

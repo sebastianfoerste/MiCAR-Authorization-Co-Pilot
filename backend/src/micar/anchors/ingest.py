@@ -12,9 +12,8 @@ Two operating modes:
       Office CELEX endpoint and stores article text with a source fingerprint.
       Refreshed text remains `fetched_unverified` until curator approval.
 
-The seed mode is what gets us to the Phase 1 ship gate without external
-network dependency. The eurlex mode lands when the live fetcher does in
-Phase 5's reg-feed work.
+The seed mode creates unverified structural pointers without an external
+network dependency. The eurlex mode performs the live official MiCAR refresh.
 """
 from __future__ import annotations
 

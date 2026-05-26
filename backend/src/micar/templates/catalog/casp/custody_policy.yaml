@@ -1,0 +1,25 @@
+clause_key: custody_policy
+track: casp
+version: "0.1.0"
+title: "Verwahrung und Verwaltung von Kryptowerten für Kunden (Art. 75 MiCAR)"
+anchor_refs:
+  - "Art. 70 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 75 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - entity
+  - services_offered
+  - governance
+prose_skeleton: |
+  ## 1. Verwahrungsdienstleistung
+
+  {{ fact:entity.legal_name }} beschreibt die beantragte Verwahrungsdienstleistung
+  im Tätigkeitsprogramm wie folgt: {{ fact:services_offered.service_description }}.
+
+  ## 2. Organisations- und Schutzmaßnahmen
+
+  [Lawyer-Review: Verwahrvereinbarung, Positionsregister, Trennung von
+   Kundenbeständen, Rückgabeprozesse und Haftungsregime anhand Art. 75 MiCAR
+   sowie der technischen Ausgestaltung dokumentieren.]
+author_note: "Applicable only where custody is selected in the service catalogue."
+conditional_on_services:
+  - custody

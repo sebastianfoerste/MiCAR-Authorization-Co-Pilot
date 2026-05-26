@@ -1,4 +1,4 @@
-"""ART track stub — Art. 16 ff. MiCAR. Full schema lands in Phase 4."""
+"""ART issuer workflow under Art. 16 ff. MiCAR."""
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -11,7 +11,14 @@ from micar.tracks.base import TemplateRef
 class ARTTrack:
     code: str = "art"
     label_de: str = "Asset-Referenced Token Emittent, Art. 16 ff. MiCAR"
-    required_section_keys: tuple[str, ...] = ()  # populated in Phase 4
+    required_section_keys: tuple[str, ...] = (
+        "issuer_entity_art",
+        "token_art",
+        "governance_art",
+        "reserve_art",
+        "redemption_art",
+        "recovery_art",
+    )
 
     def templates(self) -> Iterable[TemplateRef]:
         return [

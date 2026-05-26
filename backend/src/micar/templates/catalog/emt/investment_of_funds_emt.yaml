@@ -1,0 +1,26 @@
+clause_key: investment_of_funds_emt
+track: emt
+version: "0.1.0"
+title: "Anlage entgegengenommener Geldbeträge (Art. 54 MiCAR)"
+anchor_refs:
+  - "Art. 54 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - issuer_entity_emt
+  - funds_emt
+prose_skeleton: |
+  ## 1. Geldflüsse
+
+  Für {{ fact:issuer_entity_emt.legal_name }} ist der Prozess für im Tausch
+  gegen E-Geld-Token entgegengenommene Geldbeträge wie folgt dokumentiert:
+  {{ fact:funds_emt.received_funds_process }}.
+
+  ## 2. Anlage und Sicherung
+
+  Anlagearrangements: {{ fact:funds_emt.investment_arrangements }}.
+  Sicherungsarrangements: {{ fact:funds_emt.safeguarding_arrangements }}.
+  Liquiditätskontrollen: {{ fact:funds_emt.liquidity_controls }}.
+
+  [Lawyer-Review: Zulässigkeit und Nachweis der Anlagepraxis anhand Art. 54
+   MiCAR sowie der einschlägigen E-Geld-Anforderungen prüfen.]
+author_note: "Supplementary e-money-law anchors must be reviewed before final use."
+conditional_on_services: []

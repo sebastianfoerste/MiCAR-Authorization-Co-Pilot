@@ -1,0 +1,25 @@
+clause_key: redemption_at_par
+track: emt
+version: "0.1.0"
+title: "Ausgabe und Rücktausch zum Nennwert (Art. 49 MiCAR)"
+anchor_refs:
+  - "Art. 49 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - issuer_entity_emt
+  - redemption_emt
+prose_skeleton: |
+  ## 1. Ausgabe
+
+  {{ fact:issuer_entity_emt.legal_name }} dokumentiert die Ausgabe zum Nennwert
+  wie folgt: {{ fact:redemption_emt.issue_at_par_process }}.
+
+  ## 2. Rücktausch
+
+  Rücktauschverfahren: {{ fact:redemption_emt.redemption_at_par_process }}.
+  Gebühren oder Bedingungen: {{ fact:redemption_emt.fees_or_conditions_description }}.
+  Kommunikation an Inhaber: {{ fact:redemption_emt.holder_communications_plan }}.
+
+  [Lawyer-Review: Übereinstimmung des operativen Prozesses mit den Rechten der
+   Inhaber und den Vertragsunterlagen prüfen.]
+author_note: "Validate customer terms and payment operation evidence."
+conditional_on_services: []

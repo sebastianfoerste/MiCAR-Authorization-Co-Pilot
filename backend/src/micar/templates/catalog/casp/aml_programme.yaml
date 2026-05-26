@@ -1,0 +1,28 @@
+clause_key: aml_programme
+track: casp
+version: "0.1.0"
+title: "AML/CFT-Kontrollen als Teil des Zulassungsantrags (Art. 62 MiCAR)"
+anchor_refs:
+  - "Art. 62 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - entity
+  - aml
+prose_skeleton: |
+  ## 1. Zuständigkeit
+
+  Für die dokumentierten AML/CFT-Kontrollen von {{ fact:entity.legal_name }} ist
+  {{ fact:aml.geldwaeschebeauftragter_name }} als verantwortliche Person benannt.
+
+  ## 2. Kontrollbausteine
+
+  Risikobewertung abgeschlossen: {{ fact:aml.risk_assessment_done }}.
+  KYC-Verfahren beschrieben: {{ fact:aml.kyc_procedure_described }}.
+  Transaktionsmonitoring beschrieben: {{ fact:aml.transaction_monitoring_described }}.
+  Travel-Rule-Umsetzung dokumentiert: {{ fact:aml.travel_rule_compliance }}.
+
+  [Lawyer-Review: Die gesondert anwendbaren geldwäscherechtlichen Anforderungen
+   anhand der aktuellen Quellen prüfen und in der finalen Anlage belegen.]
+author_note: |
+  This template records MiCAR application material only. It does not assert a
+  complete AML-law assessment without reviewed supplementary anchors.
+conditional_on_services: []

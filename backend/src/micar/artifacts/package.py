@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from micar.artifacts.docx import ClauseInput, render_package_docx
 from micar.config import get_settings
-from micar.models import Anchor, Artifact, Mandate, TemplateUse
+from micar.models import Anchor, Artifact, Mandate, Template, TemplateUse
 
 
 @dataclass
@@ -35,39 +35,80 @@ def _resolve_citation_anchor(
     return {a.id: a for a in rows}
 
 
-def build_package(session: Session, *, mandate: Mandate) -> PackageBuildResult:
-    """Bundle every TemplateUse on the mandate into a single DOCX + citation CSV + zip."""
-    settings = get_settings()
-    artifacts_root = Path(settings.artifacts_dir)
-    artifacts_root.mkdir(parents=True, exist_ok=True)
-
-    uses = (
+def validated_latest_template_uses(session: Session, mandate_id: int) -> list[TemplateUse]:
+    """Return latest clauses only after review and current-source validation."""
+    rendered_uses = (
         session.execute(
-            select(TemplateUse).where(TemplateUse.mandate_id == mandate.id).order_by(TemplateUse.id)
+            select(TemplateUse)
+            .where(TemplateUse.mandate_id == mandate_id)
+            .order_by(TemplateUse.id.desc())
         )
         .scalars()
         .all()
     )
-    if not uses:
+    if not rendered_uses:
         raise ValueError("no template uses on this mandate yet")
-    failed_uses = [use.id for use in uses if use.lawyer_review_status == "citation_failed"]
-    if failed_uses:
+
+    latest_by_template: dict[int, TemplateUse] = {}
+    for use in rendered_uses:
+        latest_by_template.setdefault(use.template_id, use)
+    uses = sorted(latest_by_template.values(), key=lambda use: use.id)
+
+    unapproved_uses = [
+        f"{use.id} ({use.lawyer_review_status})"
+        for use in uses
+        if use.lawyer_review_status != "approved"
+    ]
+    if unapproved_uses:
         raise ValueError(
-            "package blocked: template uses failed citation verification: "
-            + ", ".join(str(use_id) for use_id in failed_uses)
+            "package blocked: latest template uses require lawyer approval: "
+            + ", ".join(unapproved_uses)
         )
+    flagged_uses = [str(use.id) for use in uses if use.flagged_by_change_id is not None]
+    if flagged_uses:
+        raise ValueError(
+            "package blocked: latest template uses are flagged by source changes: "
+            + ", ".join(flagged_uses)
+        )
+    cited_anchor_ids = {
+        citation.get("anchor_id")
+        for use in uses
+        for citation in (use.citations or [])
+        if citation.get("anchor_id") is not None
+    }
+    current_anchors = (
+        session.execute(select(Anchor).where(Anchor.id.in_(cited_anchor_ids))).scalars().all()
+        if cited_anchor_ids
+        else []
+    )
+    if len(current_anchors) != len(cited_anchor_ids) or any(
+        anchor.source_status != "verified" for anchor in current_anchors
+    ):
+        raise ValueError("package blocked: all cited sources must remain verified")
+    return uses
+
+
+def build_package(session: Session, *, mandate: Mandate) -> PackageBuildResult:
+    """Bundle the latest approved TemplateUses into a DOCX + citation CSV + zip."""
+    settings = get_settings()
+    artifacts_root = Path(settings.artifacts_dir)
+    artifacts_root.mkdir(parents=True, exist_ok=True)
+    uses = validated_latest_template_uses(session, mandate.id)
 
     clauses: list[ClauseInput] = []
     citation_rows: list[dict[str, str]] = []
-    flagged = 0
+    template_rows = (
+        session.execute(select(Template).where(Template.id.in_([use.template_id for use in uses])))
+        .scalars()
+        .all()
+    )
+    titles = {row.id: row.title for row in template_rows}
     for use in uses:
-        if use.flagged_by_change_id is not None:
-            flagged += 1
         cits = [c.get("citation", "") for c in (use.citations or [])]
         clauses.append(
             ClauseInput(
                 clause_key=str(use.template_id),
-                title=f"Klausel {use.template_id}",
+                title=titles.get(use.template_id, f"Klausel {use.template_id}"),
                 prose=use.rendered_prose or "[leer]",
                 citations=cits,
             )
@@ -148,5 +189,5 @@ def build_package(session: Session, *, mandate: Mandate) -> PackageBuildResult:
         zip_path=zip_path,
         sha256=sha.hexdigest(),
         total_clauses=len(clauses),
-        flagged_clauses=flagged,
+        flagged_clauses=0,
     )

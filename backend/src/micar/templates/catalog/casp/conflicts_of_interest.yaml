@@ -1,0 +1,26 @@
+clause_key: conflicts_of_interest
+track: casp
+version: "0.1.0"
+title: "Interessenkonfliktrichtlinie (Art. 72 MiCAR)"
+anchor_refs:
+  - "Art. 72 VO (EU) 2023/1114 (MiCAR)"
+required_sections:
+  - entity
+  - conflicts
+prose_skeleton: |
+  ## 1. Ziel und Anwendungsbereich
+
+  Diese Richtlinie beschreibt die Behandlung von Interessenkonflikten bei
+  {{ fact:entity.legal_name }}.
+
+  ## 2. Erfasste Konfliktlagen
+
+  Eigenhandel erfasst: {{ fact:conflicts.policy_describes_proprietary_trading }}.
+  Mitarbeitergeschäfte erfasst: {{ fact:conflicts.policy_describes_personal_account_dealing }}.
+  Zuwendungen erfasst: {{ fact:conflicts.policy_describes_inducements }}.
+  Konfliktregister geführt: {{ fact:conflicts.record_of_actual_conflicts_kept }}.
+
+  [Lawyer-Review: Offenlegungs-, Vermeidungs- und Steuerungsmaßnahmen sowie
+   Eskalationswege anhand der tatsächlichen Geschäftsprozesse ergänzen.]
+author_note: "Review against actual group structure, remuneration and product flows."
+conditional_on_services: []
