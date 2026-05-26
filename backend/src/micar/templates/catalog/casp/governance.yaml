@@ -1,0 +1,65 @@
+clause_key: governance
+track: casp
+version: "0.1.0"
+title: "Governance-Konzept (Art. 68 MiCAR)"
+
+# Anchors the rendered clause MUST cite. The pre-flight check (templates/renderer.py)
+# fails the render if any of these are missing from the anchor library or out of effect
+# at the mandate's reference date. Edit this list as the regulatory anchors shift.
+anchor_refs:
+  - "Art. 68 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 67 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 73 VO (EU) 2023/1114 (MiCAR)"
+
+required_sections:
+  - entity
+  - governance
+
+# Prose skeleton — structural only. {{ fact:... }} placeholders are substituted
+# by the renderer (stub mode does literal substitution; LLM mode is instructed to
+# fill in concrete prose grounded in the facts and anchors).
+#
+# Lawyer-author note (Sebastian): bracketed instructions remain in the rendered
+# output if the LLM cannot replace them — that is by design. A red bracket in
+# the DOCX means "review here before sending."
+prose_skeleton: |
+  ## 1. Geschäftsleitung
+
+  Der Antragsteller {{ fact:entity.legal_name }} ({{ fact:entity.legal_form }}) verfügt
+  über eine Geschäftsleitung mit {{ fact:governance.management_body_members }} Mitgliedern.
+  Sitz der Hauptverwaltung: {{ fact:entity.place_of_central_admin }}.
+
+  [Hier füllt das gunnercooke-Team die fachliche Eignung der Geschäftsleiter entlang
+   Art. 68 Abs. 1 MiCAR aus; Vorlage ist die fact-zugelieferte Kurzbeschreibung:
+   {{ fact:governance.management_body_qualifications }}.]
+
+  ## 2. Aufbauorganisation
+
+  Der Antragsteller arbeitet nach dem Drei-Linien-Modell:
+  - 1. Linie: operative Einheiten
+  - 2. Linie: Risikomanagement und Compliance
+  - 3. Linie: interne Revision
+
+  [Hier füllt das gunnercooke-Team die konkrete Ausgestaltung anhand des
+   beigefügten Organigramms aus. Verweis auf Art. 68 Abs. 7 MiCAR (Trennung
+   der Kontrollfunktionen).]
+
+  ## 3. Auslagerung
+
+  [Hier füllt das gunnercooke-Team die Auslagerungsrichtlinie entlang
+   Art. 73 MiCAR aus. Zu adressieren: kritische Funktionen, Drittdienstleister-
+   Register (DORA Art. 28), Aufsichtszugriff.]
+
+  ## 4. Aufsichtsrechtliche Anforderungen
+
+  Die laufenden aufsichtsrechtlichen Anforderungen nach Art. 67 MiCAR werden
+  durch die in Sektion „prudential" dokumentierten Eigenmittel und durch
+  die in Sektion „ict_dora" beschriebene Resilienzarchitektur erfüllt.
+
+author_note: |
+  Lawyer review required before any client-facing render. Prose skeleton is structural;
+  Sebastian or the assigned partner finalises before sign-off. Hard-stop: every
+  bracketed [Hier füllt ...] block must be replaced or explicitly retained with
+  a documented reason.
+
+conditional_on_services: []

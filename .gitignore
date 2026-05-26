@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+*.egg-info/
+
+# Node / Next
+node_modules/
+.next/
+.vercel/
+out/
+*.tsbuildinfo
+
+# Env files — never committed
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+
+# Artifact + runtime stores
+backend/artifacts_store/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
