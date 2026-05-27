@@ -1,4 +1,5 @@
 """Citation rendering tests — locks in the legal-voice.md examples."""
+
 from __future__ import annotations
 
 from micar.anchors.citation import (
@@ -7,6 +8,7 @@ from micar.anchors.citation import (
     ESMACitationParts,
     EUCitationParts,
     GermanLawParts,
+    JointEBAESMACitationParts,
     render_citation,
 )
 from micar.anchors.resolver import normalize
@@ -35,9 +37,7 @@ def test_micar_article_with_satz_nr_lit() -> None:
 
 
 def test_recital() -> None:
-    out = render_citation(
-        EUCitationParts(instrument_number="2023/1114", instrument_kind="VO", recital=11)
-    )
+    out = render_citation(EUCitationParts(instrument_number="2023/1114", instrument_kind="VO", recital=11))
     assert out == "Erwägungsgrund 11 MiCAR"
 
 
@@ -60,8 +60,22 @@ def test_esma_qa() -> None:
             question="Question 4.1",
         )
     )
+    assert out == "ESMA, Q&A on MiCAR, ESMA75-453128700-1340, Version 3, 15.7.2025, Question 4.1"
+
+
+def test_joint_eba_esma_guideline() -> None:
+    out = render_citation(
+        JointEBAESMACitationParts(
+            document_label="Leitlinien zur Eignung des Leitungsorgans nach MiCAR",
+            eba_document_id="EBA/GL/2024/09",
+            esma_document_id="ESMA75-453128700-10",
+            version="final",
+            date="4.12.2024",
+        )
+    )
     assert (
-        out == "ESMA, Q&A on MiCAR, ESMA75-453128700-1340, Version 3, 15.7.2025, Question 4.1"
+        out == "EBA/ESMA, Leitlinien zur Eignung des Leitungsorgans nach MiCAR, "
+        "EBA/GL/2024/09; ESMA75-453128700-10, final, 4.12.2024"
     )
 
 
@@ -87,14 +101,9 @@ def test_bafin_merkblatt_factoring() -> None:
 
 
 def test_kwg_paragraph() -> None:
-    out = render_citation(
-        GermanLawParts(short_name="KWG", paragraph=1, absatz=1, satz=2, nr=9)
-    )
+    out = render_citation(GermanLawParts(short_name="KWG", paragraph=1, absatz=1, satz=2, nr=9))
     assert out == "§ 1 Abs. 1 Satz 2 Nr. 9 KWG"
 
 
 def test_normalize_handles_variants() -> None:
-    assert (
-        normalize("Artikel 16  Absatz 1   Nummer 3 MiCAR")
-        == "Art. 16 Abs. 1 Nr. 3 MiCAR"
-    )
+    assert normalize("Artikel 16  Absatz 1   Nummer 3 MiCAR") == "Art. 16 Abs. 1 Nr. 3 MiCAR"

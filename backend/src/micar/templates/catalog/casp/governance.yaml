@@ -1,6 +1,6 @@
 clause_key: governance
 track: casp
-version: "0.1.0"
+version: "0.2.0"
 title: "Governance-Konzept (Art. 68 MiCAR)"
 
 # Anchors the rendered clause MUST cite. The pre-flight check (templates/renderer.py)
@@ -10,6 +10,7 @@ anchor_refs:
   - "Art. 68 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 67 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 73 VO (EU) 2023/1114 (MiCAR)"
+  - "EBA/ESMA, Leitlinien zur Eignung des Leitungsorgans nach MiCAR, EBA/GL/2024/09; ESMA75-453128700-10, final, 4.12.2024"
 
 required_sections:
   - entity
@@ -30,7 +31,8 @@ prose_skeleton: |
   Sitz der Hauptverwaltung: {{ fact:entity.place_of_central_admin }}.
 
   [Hier füllt das gunnercooke-Team die fachliche Eignung der Geschäftsleiter entlang
-   Art. 68 Abs. 1 MiCAR aus; Vorlage ist die fact-zugelieferte Kurzbeschreibung:
+   Art. 68 Abs. 1 MiCAR und der geprüften gemeinsamen EBA/ESMA-Leitlinien aus;
+   Vorlage ist die fact-zugelieferte Kurzbeschreibung:
    {{ fact:governance.management_body_qualifications }}.]
 
   ## 2. Aufbauorganisation

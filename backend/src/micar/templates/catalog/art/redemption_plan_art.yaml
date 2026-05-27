@@ -1,10 +1,11 @@
 clause_key: redemption_plan_art
 track: art
-version: "0.1.0"
+version: "0.2.0"
 title: "Rücktauschplan (Art. 47 MiCAR)"
 anchor_refs:
   - "Art. 39 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 47 VO (EU) 2023/1114 (MiCAR)"
+  - "EBA, Leitlinien über Rücktauschpläne nach MiCAR, EBA/GL/2024/13, final, 9.10.2024"
 required_sections:
   - issuer_entity_art
   - redemption_art
@@ -21,6 +22,7 @@ prose_skeleton: |
   Abwicklungsmaßnahmen: {{ fact:recovery_art.redemption_plan_measures }}.
 
   [Lawyer-Review: Rangfolge, operative Kapazität, Reserveverwertung und
-   Behördenkommunikation im Rücktauschszenario prüfen.]
+   Behördenkommunikation im Rücktauschszenario anhand der geprüften
+   EBA-Leitlinien prüfen.]
 author_note: "Requires operational evidence and scenario review."
 conditional_on_services: []

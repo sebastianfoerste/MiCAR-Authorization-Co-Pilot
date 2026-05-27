@@ -113,6 +113,28 @@ class EBACitationParts:
 
 
 @dataclass(frozen=True)
+class JointEBAESMACitationParts:
+    """Joint EBA and ESMA guideline pinpoint."""
+
+    document_label: str
+    eba_document_id: str
+    esma_document_id: str
+    version: str | int
+    date: str
+    section: str | None = None
+
+    def render(self) -> str:
+        version_str = f"Version {self.version}" if isinstance(self.version, int) else self.version
+        head = (
+            f"EBA/ESMA, {self.document_label}, {self.eba_document_id}; "
+            f"{self.esma_document_id}, {version_str}, {self.date}"
+        )
+        if self.section:
+            return f"{head}, {self.section}"
+        return head
+
+
+@dataclass(frozen=True)
 class BaFinRundschreibenParts:
     """BaFin Rundschreiben (e.g. BAIT, MaRisk, KAIT)."""
 
@@ -179,6 +201,7 @@ CitationParts = (
     EUCitationParts
     | ESMACitationParts
     | EBACitationParts
+    | JointEBAESMACitationParts
     | BaFinRundschreibenParts
     | BaFinMerkblattParts
     | GermanLawParts
@@ -208,6 +231,10 @@ def binding_force_note(level: AnchorLevel, authority: AnchorAuthority) -> str:
         ),
         AnchorAuthority.EBA: (
             "Level 3: EBA-Leitlinie / Q&A. Nicht bindend für nationale Gerichte. "
+            "Relevanz für die BaFin-Verwaltungspraxis ist zu prüfen."
+        ),
+        AnchorAuthority.EBA_ESMA: (
+            "Level 3: Gemeinsame EBA/ESMA-Leitlinie. Nicht bindend für nationale Gerichte. "
             "Relevanz für die BaFin-Verwaltungspraxis ist zu prüfen."
         ),
         AnchorAuthority.BAFIN: (

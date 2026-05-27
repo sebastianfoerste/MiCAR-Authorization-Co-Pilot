@@ -73,6 +73,6 @@ def test_superseded_template_version_must_be_regenerated_before_export() -> None
     use = _use(101, old, "0.1.0")
     session = _Session([(use, old)])
 
-    assert template_version_problem(session, use) == "101 (0.1.0 -> 0.2.0)"  # type: ignore[arg-type]
+    assert template_version_problem(session, use) == "101 (0.1.0 -> 0.3.0)"  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="regenerated against current template versions"):
         validated_latest_template_uses(session, mandate_id=4)  # type: ignore[arg-type]

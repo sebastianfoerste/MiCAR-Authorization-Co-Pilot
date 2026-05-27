@@ -1,10 +1,11 @@
 clause_key: market_abuse
 track: casp
-version: "0.1.0"
+version: "0.2.0"
 title: "Vorbeugung und Aufdeckung von Marktmissbrauch (Art. 86 bis 92 MiCAR)"
 anchor_refs:
   - "Art. 86 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 92 VO (EU) 2023/1114 (MiCAR)"
+  - "VO (EU) 2025/885 (MiCAR-Marktmissbrauch-RTS)"
 required_sections:
   - entity
   - services_offered
@@ -19,7 +20,7 @@ prose_skeleton: |
 
   [Lawyer-Review: Überwachungsumfang, Meldungswege, Insiderlisten,
    Eskalationsregeln und Verantwortlichkeiten anhand der konkret betriebenen
-   Dienstleistung und Art. 86 bis 92 MiCAR dokumentieren.]
+   Dienstleistung, Art. 86 bis 92 MiCAR und der VO (EU) 2025/885 dokumentieren.]
 author_note: "Applicable only for the service selections identified in track metadata."
 conditional_on_services:
   - trading_platform

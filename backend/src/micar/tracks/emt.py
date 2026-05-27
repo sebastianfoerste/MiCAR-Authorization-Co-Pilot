@@ -1,4 +1,5 @@
 """EMT issuer workflow under Art. 48 ff. MiCAR."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -30,5 +31,13 @@ class EMTTrack:
             TemplateRef(
                 "programme_of_operations_emt",
                 "Emittentenprogramm und MiCAR-Umsetzung (Art. 48, 54 und 55)",
+            ),
+            TemplateRef(
+                "recovery_plan_emt",
+                "Sanierungsplan für E-Geld-Token (Art. 55 i.V.m. Art. 46)",
+            ),
+            TemplateRef(
+                "redemption_plan_emt",
+                "Rücktauschplan für E-Geld-Token (Art. 55 i.V.m. Art. 47)",
             ),
         ]

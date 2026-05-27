@@ -1,0 +1,31 @@
+clause_key: redemption_plan_emt
+track: emt
+version: "0.1.0"
+title: "Rücktauschplan für E-Geld-Token (Art. 55 i.V.m. Art. 47 MiCAR)"
+anchor_refs:
+  - "Art. 55 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 47 VO (EU) 2023/1114 (MiCAR)"
+  - "EBA, Leitlinien über Rücktauschpläne nach MiCAR, EBA/GL/2024/13, final, 9.10.2024"
+required_sections:
+  - issuer_entity_emt
+  - redemption_emt
+  - recovery_emt
+prose_skeleton: |
+  ## 1. Emittent und ordentliche Rücknahme
+
+  Emittent: {{ fact:issuer_entity_emt.legal_name }}.
+  Regulärer Rücktausch zum Nennwert:
+  {{ fact:redemption_emt.redemption_at_par_process }}.
+
+  ## 2. Rücktausch im Krisenszenario
+
+  Rücktauschplanmaßnahmen: {{ fact:recovery_emt.redemption_plan_measures }}.
+  Kommunikation an Inhaber: {{ fact:redemption_emt.holder_communications_plan }}.
+
+  [Lawyer-Review: Anwendungsbereich des Art. 55 MiCAR, Verknüpfung mit Art. 47
+   MiCAR, operative Kapazität, Rangfolge und Kommunikationsmaßnahmen anhand der
+   geprüften EBA-Leitlinien finalisieren.]
+author_note: |
+  Required plan document for EMT scope. The cited EBA guideline text must be
+  reviewed before approval.
+conditional_on_services: []

@@ -1,0 +1,31 @@
+clause_key: recovery_plan_emt
+track: emt
+version: "0.1.0"
+title: "Sanierungsplan für E-Geld-Token (Art. 55 i.V.m. Art. 46 MiCAR)"
+anchor_refs:
+  - "Art. 55 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 46 VO (EU) 2023/1114 (MiCAR)"
+  - "EBA, Leitlinien über Sanierungspläne nach MiCAR, EBA/GL/2024/07, final, 13.6.2024"
+required_sections:
+  - issuer_entity_emt
+  - funds_emt
+  - recovery_emt
+prose_skeleton: |
+  ## 1. Emittent und Planungsrahmen
+
+  Emittent: {{ fact:issuer_entity_emt.legal_name }}.
+  Regulatorischer Status: {{ fact:issuer_entity_emt.regulatory_status }}.
+
+  ## 2. Maßnahmen, Auslöser und Liquidität
+
+  Sanierungsmaßnahmen: {{ fact:recovery_emt.recovery_measures }}.
+  Auslöser und Eskalation: {{ fact:recovery_emt.trigger_and_escalation_framework }}.
+  Liquiditätskontrollen: {{ fact:funds_emt.liquidity_controls }}.
+
+  [Lawyer-Review: Anwendungsbereich des Art. 55 MiCAR, Verknüpfung mit Art. 46
+   MiCAR, Szenarien, Governance, Kommunikations- und Umsetzungsmaßnahmen anhand
+   der geprüften EBA-Leitlinien finalisieren.]
+author_note: |
+  Required plan document for EMT scope. The cited EBA guideline text must be
+  reviewed before approval.
+conditional_on_services: []

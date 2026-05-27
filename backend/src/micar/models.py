@@ -1,4 +1,5 @@
 """SQLAlchemy 2.0 ORM models for the MiCAR Co-Pilot data model."""
+
 from __future__ import annotations
 
 from collections.abc import Iterator
@@ -37,6 +38,7 @@ class Base(DeclarativeBase):
 # Enumerations (stored as String — explicit, migration-friendly)
 # ---------------------------------------------------------------------------
 
+
 class Track(StrEnum):
     CASP = "casp"
     EMT = "emt"
@@ -64,6 +66,7 @@ class AnchorAuthority(StrEnum):
     EU_DIR = "eu_directive"
     ESMA = "esma"
     EBA = "eba"
+    EBA_ESMA = "eba_esma"
     BAFIN = "bafin"
     NATIONAL_LAW = "national_law"
 
@@ -91,6 +94,7 @@ class UserRole(StrEnum):
 # User and audit
 # ---------------------------------------------------------------------------
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -104,23 +108,21 @@ class User(Base):
 
 class AuditEvent(Base):
     """Append-only event log. BRAO § 203-aware: payload is redacted by writer."""
+
     __tablename__ = "audit_events"
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     actor_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
-    mandate_id: Mapped[int | None] = mapped_column(
-        ForeignKey("mandates.id"), nullable=True, index=True
-    )
+    mandate_id: Mapped[int | None] = mapped_column(ForeignKey("mandates.id"), nullable=True, index=True)
     kind: Mapped[str] = mapped_column(String(64), index=True)
     payload_redacted: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    occurred_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utcnow, index=True
-    )
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)
 
 
 # ---------------------------------------------------------------------------
 # Mandates and intake
 # ---------------------------------------------------------------------------
+
 
 class Mandate(Base):
     __tablename__ = "mandates"
@@ -134,9 +136,7 @@ class Mandate(Base):
     redact_client_identifiers: Mapped[bool] = mapped_column(Boolean, default=True)
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
-    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
     intake_sections: Mapped[list[IntakeSection]] = relationship(
         back_populates="mandate", cascade="all, delete-orphan"
@@ -151,23 +151,21 @@ class IntakeSection(Base):
     section_key: Mapped[str] = mapped_column(String(64))
     answers: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
-    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
     mandate: Mapped[Mandate] = relationship(back_populates="intake_sections")
 
-    __table_args__ = (
-        UniqueConstraint("mandate_id", "section_key", name="uq_intake_section_mandate_key"),
-    )
+    __table_args__ = (UniqueConstraint("mandate_id", "section_key", name="uq_intake_section_mandate_key"),)
 
 
 # ---------------------------------------------------------------------------
 # Anchor library
 # ---------------------------------------------------------------------------
 
+
 class Anchor(Base):
     """A pinpoint-citable regulatory norm. Versioned via effective_from/to."""
+
     __tablename__ = "anchors"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -189,9 +187,7 @@ class Anchor(Base):
     reviewed_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
-    __table_args__ = (
-        UniqueConstraint("citation_canonical", "version", name="uq_anchor_citation_version"),
-    )
+    __table_args__ = (UniqueConstraint("citation_canonical", "version", name="uq_anchor_citation_version"),)
 
 
 class AnchorChange(Base):
@@ -204,9 +200,7 @@ class AnchorChange(Base):
     detected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     source_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
-    triage_status: Mapped[str] = mapped_column(
-        String(32), default=TriageStatus.PENDING.value, index=True
-    )
+    triage_status: Mapped[str] = mapped_column(String(32), default=TriageStatus.PENDING.value, index=True)
     approved_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -214,6 +208,7 @@ class AnchorChange(Base):
 # ---------------------------------------------------------------------------
 # Templates and rendered uses
 # ---------------------------------------------------------------------------
+
 
 class Template(Base):
     __tablename__ = "templates"
@@ -281,9 +276,7 @@ _SessionFactory: sessionmaker | None = None
 def get_engine():
     global _engine
     if _engine is None:
-        _engine = create_engine(
-            get_settings().database_url, pool_pre_ping=True, future=True
-        )
+        _engine = create_engine(get_settings().database_url, pool_pre_ping=True, future=True)
     return _engine
 
 

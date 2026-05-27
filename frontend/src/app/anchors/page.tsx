@@ -47,6 +47,7 @@ const AUTHORITIES = [
   { value: "eu_directive", label: "EU-Richtlinie" },
   { value: "esma", label: "ESMA" },
   { value: "eba", label: "EBA" },
+  { value: "eba_esma", label: "EBA / ESMA" },
   { value: "bafin", label: "BaFin" },
   { value: "national_law", label: "Nationales Recht" },
 ];
@@ -63,6 +64,7 @@ function authorityBadge(authority: string): string {
   if (authority.startsWith("eu_")) return "EU";
   if (authority === "esma") return "ESMA";
   if (authority === "eba") return "EBA";
+  if (authority === "eba_esma") return "EBA / ESMA";
   if (authority === "bafin") return "BaFin";
   return authority;
 }

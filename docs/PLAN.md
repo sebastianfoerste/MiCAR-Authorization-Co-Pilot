@@ -17,11 +17,16 @@ The codebase currently contains:
   five-section EMT workflow.
 - A MiCAR anchor library with official German article refresh from the
   Publications Office CELEX source.
-- An official German-text refresh for seven adopted Level 2 instruments tied
-  to live CASP, ART and EMT templates: CASP authorisation, complaints and
-  conflicts, ART authorisation and ART/EMT whitepaper format.
+- An official German-text refresh for eight adopted Level 2 instruments tied
+  to live CASP, ART and EMT templates: CASP authorisation, complaints,
+  conflicts and market-abuse procedures, ART authorisation and ART/EMT
+  whitepaper format.
 - A curator verification endpoint for fetched anchor fingerprints.
-- Eighteen authored structural templates: nine CASP, five ART and four EMT.
+- Twenty authored structural templates: nine CASP, five ART and six EMT,
+  including standalone EMT recovery and redemption plans.
+- Official discovery pointers for the EBA ART governance, recovery-plan and
+  redemption-plan guidelines and the joint EBA/ESMA suitability guidelines
+  cited by live templates.
 - Manual public-source text ingestion for supplementary anchors, fingerprinted
   change triage and source verification.
 - Pending-change propagation from amended official MiCAR fingerprints to
@@ -31,12 +36,13 @@ The codebase currently contains:
 - Automated browser regression checks for malformed development identity
   handling and role-gated audit visibility.
 
-The seven Level 2 entries are required citations in the affected templates and
+The eight Level 2 entries are required citations in the affected templates and
 are fetched from the official Publications Office source. They remain
 unavailable for approval or external synthesis until a curator verifies the
-stored text and fingerprint. External ESMA, EBA and BaFin entries remain
-discovery pointers until a curator loads and verifies public source text. This
-is therefore a drafting prototype across three MiCAR tracks.
+stored text and fingerprint. The four linked EBA and EBA/ESMA guideline
+entries, together with other ESMA, EBA and BaFin entries, remain discovery
+pointers until a curator loads and verifies public source text. This is
+therefore a drafting prototype across three MiCAR tracks.
 
 ## Control Model
 
@@ -57,13 +63,12 @@ Client confidentiality and source provenance are product requirements:
 
 ## Next Delivery Stages
 
-1. Curator-review the fetched Level 2 source texts and perform substantive
-   legal review of the seven affected templates against their adopted RTS and
-   ITS requirements.
-2. Review the remaining structural templates against the intended filing
-   strategy and competent-authority expectations for each matter.
-3. Select and review the required Level 3 materials, beginning with sources
-   needed by live template use, before adding them as mandatory citations.
+1. Curator-review the fetched Level 2 source texts and load and verify the
+   linked EBA and EBA/ESMA guideline texts required by live templates.
+2. Perform substantive legal review of each affected template against its
+   adopted RTS, ITS and reviewed guideline requirements.
+3. Add conditional sources and intake logic for significant or
+   authority-designated tokens where the specific filing perimeter requires it.
 4. Add further authority-specific automated monitoring only after stable
    official source endpoints and change-review responsibilities are defined.
 5. Add production authentication, deployment configuration and browser-level

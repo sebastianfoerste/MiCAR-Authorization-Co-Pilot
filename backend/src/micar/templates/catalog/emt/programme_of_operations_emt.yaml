@@ -1,11 +1,13 @@
 clause_key: programme_of_operations_emt
 track: emt
-version: "0.1.0"
+version: "0.2.0"
 title: "Emittentenprogramm und MiCAR-Umsetzung (Art. 48, 54 und 55 MiCAR)"
 anchor_refs:
   - "Art. 48 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 54 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 55 VO (EU) 2023/1114 (MiCAR)"
+  - "EBA, Leitlinien über Sanierungspläne nach MiCAR, EBA/GL/2024/07, final, 13.6.2024"
+  - "EBA, Leitlinien über Rücktauschpläne nach MiCAR, EBA/GL/2024/13, final, 9.10.2024"
 required_sections:
   - issuer_entity_emt
   - token_emt
@@ -27,7 +29,8 @@ prose_skeleton: |
   Rücktauschplanmaßnahmen: {{ fact:recovery_emt.redemption_plan_measures }}.
 
   [Lawyer-Review: Dieses Arbeitspapier auf die konkrete EMI- oder
-   Kreditinstitutszulassung sowie alle zusätzlichen Rechtsgrundlagen abstimmen.]
+   Kreditinstitutszulassung, die geprüften EBA-Leitlinien und alle zusätzlichen
+   Rechtsgrundlagen abstimmen.]
 author_note: |
   Internal assembly document. It does not itself represent a MiCAR-defined
   standalone filing document or replace supplementary source review.

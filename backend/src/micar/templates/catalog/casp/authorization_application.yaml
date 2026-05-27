@@ -1,6 +1,6 @@
 clause_key: authorization_application
 track: casp
-version: "0.2.0"
+version: "0.3.0"
 title: "Antrag auf Zulassung als Anbieter von Kryptowerte-Dienstleistungen (Art. 62 MiCAR)"
 anchor_refs:
   - "Art. 59 VO (EU) 2023/1114 (MiCAR)"
@@ -8,6 +8,7 @@ anchor_refs:
   - "Art. 67 VO (EU) 2023/1114 (MiCAR)"
   - "VO (EU) 2025/305 (MiCAR-CASP-Antrags-RTS)"
   - "VO (EU) 2025/306 (MiCAR-CASP-Antrags-ITS)"
+  - "EBA/ESMA, Leitlinien zur Eignung des Leitungsorgans nach MiCAR, EBA/GL/2024/09; ESMA75-453128700-10, final, 4.12.2024"
 required_sections:
   - entity
   - services_offered
@@ -34,7 +35,8 @@ prose_skeleton: |
 
   [Lawyer-Review: Vollständigkeit der in Art. 62 Abs. 2 MiCAR verlangten Angaben und
    Unterlagen sowie Form- und Verfahrensvorgaben der VO (EU) 2025/305 und
-   VO (EU) 2025/306 anhand der Anlagenliste prüfen.]
+   VO (EU) 2025/306 anhand der Anlagenliste prüfen; Angaben zur Geschäftsleitung
+   anhand der geprüften gemeinsamen EBA/ESMA-Leitlinien beurteilen.]
 author_note: |
   Structural application cover draft only. Review the complete document list and
   competent-authority filing format before approval.

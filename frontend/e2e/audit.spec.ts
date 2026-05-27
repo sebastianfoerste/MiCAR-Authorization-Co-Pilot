@@ -8,9 +8,10 @@ const databaseUrl =
   process.env.DATABASE_URL ?? "postgresql+psycopg://micar:micar@localhost:5433/micar";
 // This reserved account is removed before and after every test that may provision it.
 const testEmail = "browser-e2e@example.com";
+const jointGuidelineCitation = "EBA/ESMA, Browserprüfung gemeinsamer MiCAR-Leitlinien";
 
-function runDatabaseStep(script: string): void {
-  execFileSync("uv", ["run", "python", "-c", script, testEmail], {
+function runDatabaseStep(script: string, argument = testEmail): void {
+  execFileSync("uv", ["run", "python", "-c", script, argument], {
     cwd: backendDir,
     env: { ...process.env, DATABASE_URL: databaseUrl },
     stdio: "pipe",
@@ -41,6 +42,39 @@ with session_scope() as session:
 `);
 }
 
+function removeTestAnchor(): void {
+  runDatabaseStep(
+    `
+import sys
+from sqlalchemy import delete
+from micar.models import Anchor, session_scope
+with session_scope() as session:
+    session.execute(delete(Anchor).where(Anchor.citation_canonical == sys.argv[1]))
+`,
+    jointGuidelineCitation,
+  );
+}
+
+function insertTestAnchor(): void {
+  runDatabaseStep(
+    `
+import sys
+from micar.models import Anchor, AnchorAuthority, AnchorLevel, SourceStatus, session_scope
+with session_scope() as session:
+    session.add(Anchor(
+        level=AnchorLevel.LEVEL_3.value,
+        authority=AnchorAuthority.EBA_ESMA.value,
+        citation_canonical=sys.argv[1],
+        url="https://www.eba.europa.eu/",
+        version="browser-fixture",
+        binding_force_note="Level 3: Gemeinsame EBA/ESMA-Leitlinie.",
+        source_status=SourceStatus.SEED_UNVERIFIED.value,
+    ))
+`,
+    jointGuidelineCitation,
+  );
+}
+
 async function signIn(page: Page, email: string): Promise<void> {
   await page.goto("/sign-in");
   await page.getByPlaceholder("dev@example.com").fill(email);
@@ -50,10 +84,12 @@ async function signIn(page: Page, email: string): Promise<void> {
 
 test.beforeEach(() => {
   removeTestUser();
+  removeTestAnchor();
 });
 
 test.afterEach(() => {
   removeTestUser();
+  removeTestAnchor();
 });
 
 test("redirects an unauthenticated visitor to sign-in", async ({ page }) => {
@@ -90,4 +126,15 @@ test("shows redacted audit events to an administrator", async ({ page }) => {
   await expect(table.getByText("user.provisioned")).toBeVisible();
   await expect(table.getByText('"user_id"')).toBeVisible();
   await expect(table).not.toContainText(testEmail);
+});
+
+test("labels unverified joint EBA and ESMA sources in the anchor library", async ({ page }) => {
+  await signIn(page, testEmail);
+  insertTestAnchor();
+
+  await page.goto("/anchors?authority=eba_esma&source_status=seed_unverified");
+
+  const item = page.getByRole("listitem").filter({ hasText: jointGuidelineCitation });
+  await expect(item).toContainText("EBA / ESMA · level 3");
+  await expect(item).toContainText("Seed, nicht geprüft");
 });

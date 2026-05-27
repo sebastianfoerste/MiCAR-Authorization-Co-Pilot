@@ -114,6 +114,16 @@ _INSTRUMENTS = (
         tags=("casp", "conflicts", "rts"),
     ),
     OfficialLevel2Instrument(
+        instrument_number="2025/885",
+        celex="32025R0885",
+        short_name="MiCAR-Marktmissbrauch-RTS",
+        title="Vorkehrungen, Systeme und Verfahren zur Verhinderung und Meldung von Marktmissbrauch",
+        publication_version="2025-08-20",
+        applicable_from=date(2025, 9, 9),
+        act_kind="delegated",
+        tags=("casp", "market_abuse", "rts"),
+    ),
+    OfficialLevel2Instrument(
         instrument_number="2025/1125",
         celex="32025R1125",
         short_name="MiCAR-ART-Antrags-RTS",

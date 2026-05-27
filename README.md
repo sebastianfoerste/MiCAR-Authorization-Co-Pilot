@@ -90,7 +90,10 @@ fingerprint, the application marks that source unverified, places the change
 in the pending queue and flags rendered clauses citing it. The initial
 official load remains an unverified source import requiring curator review.
 
-ESMA, EBA and BaFin entries initially remain unverified discovery pointers.
+ESMA, EBA, joint EBA/ESMA and BaFin entries initially remain unverified
+discovery pointers. The catalogue now includes official links for four
+guidelines used by live templates: ART governance, recovery plans, redemption
+plans and joint management-body suitability.
 A curator may load public official text in the anchor library UI or through
 `POST /anchors/{anchor_id}/source-text`. The application calculates a source
 fingerprint and places new or changed text in the pending change queue.
@@ -130,9 +133,9 @@ cd frontend && npx playwright install chromium
 
 ## Current Status
 
-- Implemented: authentication bridge, owner-scoped mandates, CASP, ART and EMT intake, 18 track templates, official MiCAR article refresh, official refresh for seven adopted Level 2 instruments used by live templates, manual Level 3 source ingestion, source-change review queue, redacted admin audit view, document review cockpit and approved DOCX package generation.
+- Implemented: authentication bridge, owner-scoped mandates, CASP, ART and EMT intake, 20 track templates, official MiCAR article refresh, official refresh for eight adopted Level 2 instruments used by live templates, official Level 3 guideline discovery pointers for live template needs, manual supplementary source ingestion, source-change review queue, redacted admin audit view, document review cockpit and approved DOCX package generation.
 - Implemented safety work: outbound-processing gate, reversible redaction, verified-source approval and export gate, official and supplementary source-change flagging, citation-failed approval block, audit payload minimisation, persisted template records and automated browser checks for identity and audit access.
-- Outstanding production work: curator verification and substantive legal review of the newly linked Level 2 documents, selection of required Level 3 sources, additional authority-specific monitoring, production deployment hardening and broader browser coverage for full drafting workflows.
+- Outstanding production work: curator verification and substantive legal review of the newly linked Level 2 instruments and Level 3 guidelines, conditional liquidity-source handling for significant or authority-designated tokens, additional authority-specific monitoring, production deployment hardening and broader browser coverage for full drafting workflows.
 
 No client matter should be processed externally until the required professional,
 confidentiality and processing approvals have been documented.

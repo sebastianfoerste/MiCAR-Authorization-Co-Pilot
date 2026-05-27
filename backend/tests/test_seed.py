@@ -46,14 +46,17 @@ def test_external_seed_present() -> None:
     titles = {i.title for i in items}
     assert "BAIT: Bankaufsichtliche Anforderungen an die IT" in titles
     assert "BaFin-Merkblatt Kryptoverwahrgeschäft" in titles
+    assert "EBA-Leitlinien über Sanierungspläne nach MiCAR" in titles
+    assert "Gemeinsame EBA/ESMA-Leitlinien zur Eignung nach MiCAR" in titles
 
 
 def test_level2_seed_contains_official_instruments_used_by_templates() -> None:
     items = all_level2()
     citations = {item.citation_canonical for item in items}
 
-    assert len(items) == 7
+    assert len(items) == 8
     assert "VO (EU) 2025/305 (MiCAR-CASP-Antrags-RTS)" in citations
+    assert "VO (EU) 2025/885 (MiCAR-Marktmissbrauch-RTS)" in citations
     assert "VO (EU) 2025/1125 (MiCAR-ART-Antrags-RTS)" in citations
     assert "VO (EU) 2024/2984 (MiCAR-Whitepaper-ITS)" in citations
     assert all(item.level.value == "level_2" for item in items)
@@ -63,6 +66,7 @@ def test_level2_seed_uses_applicability_dates() -> None:
     items = {item.citation_canonical: item for item in all_level2()}
 
     assert str(items["VO (EU) 2025/305 (MiCAR-CASP-Antrags-RTS)"].effective_from) == "2025-04-20"
+    assert str(items["VO (EU) 2025/885 (MiCAR-Marktmissbrauch-RTS)"].effective_from) == "2025-09-09"
     assert str(items["VO (EU) 2024/2984 (MiCAR-Whitepaper-ITS)"].effective_from) == "2025-12-23"
     assert "Delegierte Verordnung" in items["VO (EU) 2025/305 (MiCAR-CASP-Antrags-RTS)"].binding_force_note
     assert "Durchführungsverordnung" in items["VO (EU) 2024/2984 (MiCAR-Whitepaper-ITS)"].binding_force_note

@@ -1,9 +1,10 @@
 clause_key: recovery_plan_art
 track: art
-version: "0.1.0"
+version: "0.2.0"
 title: "Sanierungsplan (Art. 46 MiCAR)"
 anchor_refs:
   - "Art. 46 VO (EU) 2023/1114 (MiCAR)"
+  - "EBA, Leitlinien über Sanierungspläne nach MiCAR, EBA/GL/2024/07, final, 13.6.2024"
 required_sections:
   - issuer_entity_art
   - recovery_art
@@ -19,6 +20,7 @@ prose_skeleton: |
   {{ fact:recovery_art.trigger_and_escalation_framework }}
 
   [Lawyer-Review: Umsetzbarkeit, Governance, Szenarien, Kommunikationswege und
-   Aktualisierungsverfahren gemäß Art. 46 MiCAR ausarbeiten.]
+   Aktualisierungsverfahren gemäß Art. 46 MiCAR anhand der geprüften
+   EBA-Leitlinien ausarbeiten.]
 author_note: "Requires governance and financial-resilience review."
 conditional_on_services: []
