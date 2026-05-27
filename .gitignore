@@ -13,6 +13,8 @@ node_modules/
 .vercel/
 out/
 *.tsbuildinfo
+frontend/playwright-report/
+frontend/test-results/
 
 # Env files — never committed
 .env

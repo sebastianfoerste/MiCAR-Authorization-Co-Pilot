@@ -1,5 +1,7 @@
 import { auth } from "../auth";
 
+export const runtime = "nodejs";
+
 export default auth((req) => {
   const isAuthed = !!req.auth;
   const path = req.nextUrl.pathname;

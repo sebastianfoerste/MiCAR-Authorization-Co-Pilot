@@ -25,6 +25,8 @@ The codebase currently contains:
   affected rendered clauses.
 - Clause-level review with provenance display and approved DOCX package export.
 - An administrator-only view of redacted operational audit events.
+- Automated browser regression checks for malformed development identity
+  handling and role-gated audit visibility.
 
 External ESMA, EBA and BaFin entries are discovery pointers until a curator
 loads and verifies public source text. Authority-specific automated feeds and
@@ -55,8 +57,9 @@ Client confidentiality and source provenance are product requirements:
    required for each track, beginning with sources needed by live template use.
 3. Add authority-specific automated monitoring only after stable official
    source endpoints and change-review responsibilities are defined.
-4. Add production authentication, deployment configuration and automated
-   browser-level end-to-end checks before live mandate use.
+4. Add production authentication, deployment configuration and browser-level
+   coverage for complete drafting and package-review workflows before live
+   mandate use.
 
 ## Verification Standard
 
@@ -64,6 +67,7 @@ Run:
 
 ```bash
 make test
+make e2e
 make lint
 make typecheck
 make build-frontend

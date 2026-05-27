@@ -107,6 +107,7 @@ points requiring a lawyer's factual and legal completion before approval.
 
 ```bash
 make test
+make e2e
 make lint
 make typecheck
 make build-frontend
@@ -115,11 +116,17 @@ make dev-backend
 make dev-frontend
 ```
 
+For the one-time browser runtime setup required by `make e2e`, run:
+
+```bash
+cd frontend && npx playwright install chromium
+```
+
 ## Current Status
 
 - Implemented: authentication bridge, owner-scoped mandates, CASP, ART and EMT intake, 18 track templates, official MiCAR article refresh, manual supplementary-source ingestion, source-change review queue, redacted admin audit view, document review cockpit and approved DOCX package generation.
-- Implemented safety work: outbound-processing gate, reversible redaction, verified-source approval and export gate, official and supplementary source-change flagging, citation-failed approval block, audit payload minimisation and persisted template records.
-- Outstanding production work: authority-specific automated supplementary feeds, Level 2 and Level 3 reviewed source coverage, production deployment hardening and automated browser-level end-to-end checks.
+- Implemented safety work: outbound-processing gate, reversible redaction, verified-source approval and export gate, official and supplementary source-change flagging, citation-failed approval block, audit payload minimisation, persisted template records and automated browser checks for identity and audit access.
+- Outstanding production work: authority-specific automated supplementary feeds, Level 2 and Level 3 reviewed source coverage, production deployment hardening and broader browser coverage for full drafting workflows.
 
 No client matter should be processed externally until the required professional,
 confidentiality and processing approvals have been documented.

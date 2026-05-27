@@ -1,5 +1,5 @@
 .PHONY: help install install-frontend db-up db-down db-reset migrate revision \
-	test lint typecheck build-frontend format dev-backend dev-frontend clean
+	test e2e lint typecheck build-frontend format dev-backend dev-frontend clean
 
 UV ?= uv
 NPM ?= npm
@@ -13,6 +13,7 @@ help:
 	@echo "make migrate         - alembic upgrade head"
 	@echo "make revision m=...  - autogenerate Alembic revision (e.g. make revision m=\"add foo\")"
 	@echo "make test            - pytest"
+	@echo "make e2e             - Playwright browser regression checks"
 	@echo "make lint            - ruff and ESLint checks"
 	@echo "make typecheck       - TypeScript validation"
 	@echo "make build-frontend  - Next.js production build"
@@ -28,7 +29,7 @@ install-frontend:
 	cd frontend && $(NPM) install
 
 db-up:
-	docker compose up -d postgres
+	docker compose up -d --wait postgres
 
 db-down:
 	docker compose down
@@ -44,6 +45,11 @@ revision:
 
 test:
 	cd backend && $(UV) run pytest -q
+
+e2e:
+	$(MAKE) db-up
+	$(MAKE) migrate
+	cd frontend && $(NPM) run e2e
 
 lint:
 	cd backend && $(UV) run ruff check src tests
