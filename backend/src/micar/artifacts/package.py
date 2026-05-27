@@ -1,4 +1,5 @@
 """Package assembly — TemplateUses → grouped DOCX + citation index CSV → zip."""
+
 from __future__ import annotations
 
 import csv
@@ -14,6 +15,7 @@ from sqlalchemy.orm import Session
 from micar.artifacts.docx import ClauseInput, render_package_docx
 from micar.config import get_settings
 from micar.models import Anchor, Artifact, Mandate, Template, TemplateUse
+from micar.templates.registry import TemplateRegistry, load_registry
 
 
 @dataclass
@@ -25,9 +27,7 @@ class PackageBuildResult:
     flagged_clauses: int
 
 
-def _resolve_citation_anchor(
-    session: Session, anchor_ids: list[int | None]
-) -> dict[int, Anchor]:
+def _resolve_citation_anchor(session: Session, anchor_ids: list[int | None]) -> dict[int, Anchor]:
     real_ids = [i for i in anchor_ids if i is not None]
     if not real_ids:
         return {}
@@ -35,40 +35,69 @@ def _resolve_citation_anchor(
     return {a.id: a for a in rows}
 
 
+def latest_template_uses_by_clause(session: Session, mandate_id: int) -> list[TemplateUse]:
+    """Return only the newest render of each logical document."""
+    rendered_rows = session.execute(
+        select(TemplateUse, Template)
+        .join(Template, Template.id == TemplateUse.template_id)
+        .where(TemplateUse.mandate_id == mandate_id)
+        .order_by(TemplateUse.id.desc())
+    ).all()
+    latest_by_clause: dict[tuple[str, str], TemplateUse] = {}
+    for use, template in rendered_rows:
+        latest_by_clause.setdefault((template.track, template.clause_key), use)
+    return sorted(latest_by_clause.values(), key=lambda use: use.id)
+
+
+def template_version_problem(
+    session: Session,
+    use: TemplateUse,
+    *,
+    registry: TemplateRegistry | None = None,
+) -> str | None:
+    """Return a regeneration reason if a rendered clause predates its catalogue template."""
+    persisted_template = session.get(Template, use.template_id)
+    if persisted_template is None:
+        return f"{use.id} (template metadata unavailable)"
+    current_template = (registry or load_registry()).get(
+        persisted_template.track, persisted_template.clause_key
+    )
+    if current_template is None:
+        return f"{use.id} (catalogue template unavailable)"
+    if use.template_version != current_template.version:
+        return f"{use.id} ({use.template_version} -> {current_template.version})"
+    return None
+
+
 def validated_latest_template_uses(session: Session, mandate_id: int) -> list[TemplateUse]:
     """Return latest clauses only after review and current-source validation."""
-    rendered_uses = (
-        session.execute(
-            select(TemplateUse)
-            .where(TemplateUse.mandate_id == mandate_id)
-            .order_by(TemplateUse.id.desc())
-        )
-        .scalars()
-        .all()
-    )
-    if not rendered_uses:
+    uses = latest_template_uses_by_clause(session, mandate_id)
+    if not uses:
         raise ValueError("no template uses on this mandate yet")
 
-    latest_by_template: dict[int, TemplateUse] = {}
-    for use in rendered_uses:
-        latest_by_template.setdefault(use.template_id, use)
-    uses = sorted(latest_by_template.values(), key=lambda use: use.id)
+    registry = load_registry()
+    stale_uses = [
+        problem
+        for use in uses
+        if (problem := template_version_problem(session, use, registry=registry)) is not None
+    ]
+    if stale_uses:
+        raise ValueError(
+            "package blocked: clauses must be regenerated against current template versions: "
+            + ", ".join(stale_uses)
+        )
 
     unapproved_uses = [
-        f"{use.id} ({use.lawyer_review_status})"
-        for use in uses
-        if use.lawyer_review_status != "approved"
+        f"{use.id} ({use.lawyer_review_status})" for use in uses if use.lawyer_review_status != "approved"
     ]
     if unapproved_uses:
         raise ValueError(
-            "package blocked: latest template uses require lawyer approval: "
-            + ", ".join(unapproved_uses)
+            "package blocked: latest template uses require lawyer approval: " + ", ".join(unapproved_uses)
         )
     flagged_uses = [str(use.id) for use in uses if use.flagged_by_change_id is not None]
     if flagged_uses:
         raise ValueError(
-            "package blocked: latest template uses are flagged by source changes: "
-            + ", ".join(flagged_uses)
+            "package blocked: latest template uses are flagged by source changes: " + ", ".join(flagged_uses)
         )
     cited_anchor_ids = {
         citation.get("anchor_id")

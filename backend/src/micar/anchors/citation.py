@@ -11,6 +11,7 @@ The functions here are pure (no DB access). The Anchor row stores the rendered
 string in `citation_canonical` so SQL searches stay simple. Re-rendering on a
 fresh ingest is idempotent.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -81,9 +82,7 @@ class ESMACitationParts:
     section: str | None = None  # for guidelines
 
     def render(self) -> str:
-        version_str = (
-            f"Version {self.version}" if isinstance(self.version, int) else self.version
-        )
+        version_str = f"Version {self.version}" if isinstance(self.version, int) else self.version
         head = f"ESMA, {self.document_label}, {self.document_id}, {version_str}, {self.date}"
         if self.question:
             return f"{head}, {self.question}"
@@ -104,9 +103,7 @@ class EBACitationParts:
     section: str | None = None
 
     def render(self) -> str:
-        version_str = (
-            f"Version {self.version}" if isinstance(self.version, int) else self.version
-        )
+        version_str = f"Version {self.version}" if isinstance(self.version, int) else self.version
         head = f"EBA, {self.document_label}, {self.document_id}, {version_str}, {self.date}"
         if self.question:
             return f"{head}, {self.question}"
@@ -200,8 +197,8 @@ def binding_force_note(level: AnchorLevel, authority: AnchorAuthority) -> str:
         return "Level 1: direkt anwendbar (Verordnung) bzw. umsetzungsbedürftig (Richtlinie)."
     if level == AnchorLevel.LEVEL_2:
         return (
-            "Level 2: Technical Standard / delegierter Rechtsakt. Bindend nach Annahme "
-            "durch die Kommission und Ablauf der Einspruchsfrist."
+            "Level 2: Delegierter oder durchführender Rechtsakt. Bindungswirkung, "
+            "Inkrafttreten und Anwendbarkeit anhand des angenommenen Rechtsakts prüfen."
         )
     # Level 3
     auth_map = {

@@ -1,11 +1,13 @@
 clause_key: authorization_application
 track: casp
-version: "0.1.0"
+version: "0.2.0"
 title: "Antrag auf Zulassung als Anbieter von Kryptowerte-Dienstleistungen (Art. 62 MiCAR)"
 anchor_refs:
   - "Art. 59 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 62 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 67 VO (EU) 2023/1114 (MiCAR)"
+  - "VO (EU) 2025/305 (MiCAR-CASP-Antrags-RTS)"
+  - "VO (EU) 2025/306 (MiCAR-CASP-Antrags-ITS)"
 required_sections:
   - entity
   - services_offered
@@ -31,7 +33,8 @@ prose_skeleton: |
   dokumentiert.
 
   [Lawyer-Review: Vollständigkeit der in Art. 62 Abs. 2 MiCAR verlangten Angaben und
-   Unterlagen anhand der Anlagenliste prüfen.]
+   Unterlagen sowie Form- und Verfahrensvorgaben der VO (EU) 2025/305 und
+   VO (EU) 2025/306 anhand der Anlagenliste prüfen.]
 author_note: |
   Structural application cover draft only. Review the complete document list and
   competent-authority filing format before approval.

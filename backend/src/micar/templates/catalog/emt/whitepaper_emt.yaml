@@ -1,11 +1,12 @@
 clause_key: whitepaper_emt
 track: emt
-version: "0.1.0"
+version: "0.2.0"
 title: "Kryptowerte-Whitepaper für E-Geld-Token (Art. 51 MiCAR)"
 anchor_refs:
   - "Art. 48 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 49 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 51 VO (EU) 2023/1114 (MiCAR)"
+  - "VO (EU) 2024/2984 (MiCAR-Whitepaper-ITS)"
 required_sections:
   - issuer_entity_emt
   - token_emt
@@ -23,6 +24,7 @@ prose_skeleton: |
   Rücktauschverfahren: {{ fact:redemption_emt.redemption_at_par_process }}.
 
   [Lawyer-Review: Emittentenstatus, Whitepaper-Pflichtangaben, Ausgabe zum
-   Nennwert und Rücktauschdarstellung vollständig prüfen.]
+   Nennwert, Rücktauschdarstellung und Format nach der seit 23.12.2025
+   anwendbaren VO (EU) 2024/2984 vollständig prüfen.]
 author_note: "Skeleton only; publication requires complete legal and factual review."
 conditional_on_services: []

@@ -1,9 +1,10 @@
 clause_key: conflicts_of_interest
 track: casp
-version: "0.1.0"
+version: "0.2.0"
 title: "Interessenkonfliktrichtlinie (Art. 72 MiCAR)"
 anchor_refs:
   - "Art. 72 VO (EU) 2023/1114 (MiCAR)"
+  - "VO (EU) 2025/1142 (MiCAR-CASP-Interessenkonflikt-RTS)"
 required_sections:
   - entity
   - conflicts
@@ -21,6 +22,7 @@ prose_skeleton: |
   Konfliktregister geführt: {{ fact:conflicts.record_of_actual_conflicts_kept }}.
 
   [Lawyer-Review: Offenlegungs-, Vermeidungs- und Steuerungsmaßnahmen sowie
-   Eskalationswege anhand der tatsächlichen Geschäftsprozesse ergänzen.]
+   Eskalationswege anhand der tatsächlichen Geschäftsprozesse und der
+   VO (EU) 2025/1142 ergänzen.]
 author_note: "Review against actual group structure, remuneration and product flows."
 conditional_on_services: []

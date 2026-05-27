@@ -8,6 +8,7 @@ Current surface:
   GET  /mandates/{id}/artifacts       — list artifacts.
   GET  /artifacts/{id}/download       — stream the file.
 """
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -21,7 +22,11 @@ from sqlalchemy import select
 
 from micar.api.access import load_accessible_mandate_or_404
 from micar.api.auth import get_current_user
-from micar.artifacts.package import build_package
+from micar.artifacts.package import (
+    build_package,
+    latest_template_uses_by_clause,
+    template_version_problem,
+)
 from micar.compliance.audit import write_audit
 from micar.intake.schema import CASPServiceCode
 from micar.models import (
@@ -92,6 +97,8 @@ class ReviewUseOut(BaseModel):
     clause_key: str
     title: str
     template_version: str
+    current_template_version: str | None
+    requires_regeneration: bool
     lawyer_review_status: str
     flagged_by_change_id: int | None
     rendered_prose: str | None
@@ -171,30 +178,13 @@ def _outcome_to_result(template: TemplateDef, outcome: RenderOutcome) -> RenderR
     )
 
 
-def _latest_template_uses(session, mandate_id: int) -> list[TemplateUse]:
-    rows = (
-        session.execute(
-            select(TemplateUse)
-            .where(TemplateUse.mandate_id == mandate_id)
-            .order_by(TemplateUse.id.desc())
-        )
-        .scalars()
-        .all()
-    )
-    latest: dict[int, TemplateUse] = {}
-    for row in rows:
-        latest.setdefault(row.template_id, row)
-    return sorted(latest.values(), key=lambda row: row.id)
-
-
 def _review_use_out(session, use: TemplateUse) -> ReviewUseOut:
     template = session.get(Template, use.template_id)
+    current_template = load_registry().get(template.track, template.clause_key) if template else None
     citations = use.citations or []
     anchor_ids = [entry.get("anchor_id") for entry in citations if entry.get("anchor_id")]
     anchors = (
-        session.execute(select(Anchor).where(Anchor.id.in_(anchor_ids))).scalars().all()
-        if anchor_ids
-        else []
+        session.execute(select(Anchor).where(Anchor.id.in_(anchor_ids))).scalars().all() if anchor_ids else []
     )
     by_id = {anchor.id: anchor for anchor in anchors}
     return ReviewUseOut(
@@ -202,6 +192,8 @@ def _review_use_out(session, use: TemplateUse) -> ReviewUseOut:
         clause_key=template.clause_key if template else str(use.template_id),
         title=template.title if template else f"Klausel {use.template_id}",
         template_version=use.template_version,
+        current_template_version=current_template.version if current_template else None,
+        requires_regeneration=(current_template is None or use.template_version != current_template.version),
         lawyer_review_status=use.lawyer_review_status,
         flagged_by_change_id=use.flagged_by_change_id,
         rendered_prose=use.rendered_prose,
@@ -211,15 +203,9 @@ def _review_use_out(session, use: TemplateUse) -> ReviewUseOut:
                 citation=entry.get("citation", ""),
                 anchor_id=entry.get("anchor_id"),
                 source_status=(
-                    by_id[entry["anchor_id"]].source_status
-                    if entry.get("anchor_id") in by_id
-                    else None
+                    by_id[entry["anchor_id"]].source_status if entry.get("anchor_id") in by_id else None
                 ),
-                url=(
-                    by_id[entry["anchor_id"]].url
-                    if entry.get("anchor_id") in by_id
-                    else None
-                ),
+                url=(by_id[entry["anchor_id"]].url if entry.get("anchor_id") in by_id else None),
             )
             for entry in citations
         ],
@@ -227,9 +213,7 @@ def _review_use_out(session, use: TemplateUse) -> ReviewUseOut:
 
 
 @router.post("/mandates/{mandate_id}/render", response_model=RenderRunOut)
-def render_mandate(
-    mandate_id: int, user: UserOut = Depends(get_current_user)
-) -> RenderRunOut:
+def render_mandate(mandate_id: int, user: UserOut = Depends(get_current_user)) -> RenderRunOut:
     with session_scope() as session:
         m = load_accessible_mandate_or_404(session, mandate_id, user)
         if m.state not in {MandateState.READY_TO_GENERATE.value, MandateState.IN_REVIEW.value}:
@@ -254,12 +238,10 @@ def render_mandate(
 
 
 @router.get("/mandates/{mandate_id}/renders", response_model=list[ReviewUseOut])
-def list_rendered_clauses(
-    mandate_id: int, user: UserOut = Depends(get_current_user)
-) -> list[ReviewUseOut]:
+def list_rendered_clauses(mandate_id: int, user: UserOut = Depends(get_current_user)) -> list[ReviewUseOut]:
     with session_scope() as session:
         load_accessible_mandate_or_404(session, mandate_id, user)
-        return [_review_use_out(session, use) for use in _latest_template_uses(session, mandate_id)]
+        return [_review_use_out(session, use) for use in latest_template_uses_by_clause(session, mandate_id)]
 
 
 @router.post(
@@ -277,9 +259,14 @@ def review_rendered_clause(
         use = session.get(TemplateUse, template_use_id)
         if use is None or use.mandate_id != mandate_id:
             raise HTTPException(status_code=404, detail="rendered clause not found")
-        latest_ids = {row.id for row in _latest_template_uses(session, mandate_id)}
+        latest_ids = {row.id for row in latest_template_uses_by_clause(session, mandate_id)}
         if use.id not in latest_ids:
             raise HTTPException(status_code=409, detail="only latest clause versions can be reviewed")
+        if body.decision == "approved" and template_version_problem(session, use) is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="superseded template version must be regenerated before approval",
+            )
         if body.decision == "approved" and use.lawyer_review_status == "citation_failed":
             raise HTTPException(status_code=409, detail="citation-failed clause cannot be approved")
         if body.decision == "approved" and use.flagged_by_change_id is not None:
@@ -295,8 +282,10 @@ def review_rendered_clause(
                 if anchor_ids
                 else []
             )
-            if not anchor_ids or len(anchors) != len(anchor_ids) or any(
-                anchor.source_status != "verified" for anchor in anchors
+            if (
+                not anchor_ids
+                or len(anchors) != len(anchor_ids)
+                or any(anchor.source_status != "verified" for anchor in anchors)
             ):
                 raise HTTPException(
                     status_code=409,
@@ -310,15 +299,11 @@ def review_rendered_clause(
             mandate_id=mandate_id,
             payload={"template_use_id": use.id, "decision": body.decision},
         )
-        return ReviewDecisionOut(
-            template_use_id=use.id, lawyer_review_status=use.lawyer_review_status
-        )
+        return ReviewDecisionOut(template_use_id=use.id, lawyer_review_status=use.lawyer_review_status)
 
 
 @router.post("/mandates/{mandate_id}/package", response_model=PackageOut)
-def package_mandate(
-    mandate_id: int, user: UserOut = Depends(get_current_user)
-) -> PackageOut:
+def package_mandate(mandate_id: int, user: UserOut = Depends(get_current_user)) -> PackageOut:
     with session_scope() as session:
         m = load_accessible_mandate_or_404(session, mandate_id, user)
         try:
@@ -335,16 +320,12 @@ def package_mandate(
 
 
 @router.get("/mandates/{mandate_id}/artifacts", response_model=list[ArtifactOut])
-def list_artifacts(
-    mandate_id: int, user: UserOut = Depends(get_current_user)
-) -> list[ArtifactOut]:
+def list_artifacts(mandate_id: int, user: UserOut = Depends(get_current_user)) -> list[ArtifactOut]:
     with session_scope() as session:
         load_accessible_mandate_or_404(session, mandate_id, user)
         rows = (
             session.execute(
-                select(Artifact)
-                .where(Artifact.mandate_id == mandate_id)
-                .order_by(Artifact.created_at.desc())
+                select(Artifact).where(Artifact.mandate_id == mandate_id).order_by(Artifact.created_at.desc())
             )
             .scalars()
             .all()
@@ -365,9 +346,7 @@ def list_artifacts(
 
 
 @router.get("/artifacts/{artifact_id}/download")
-def download_artifact(
-    artifact_id: int, user: UserOut = Depends(get_current_user)
-):
+def download_artifact(artifact_id: int, user: UserOut = Depends(get_current_user)):
     with session_scope() as session:
         row = session.get(Artifact, artifact_id)
         if not row:

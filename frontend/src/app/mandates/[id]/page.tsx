@@ -31,6 +31,8 @@ type ReviewUse = {
   clause_key: string;
   title: string;
   template_version: string;
+  current_template_version: string | null;
+  requires_regeneration: boolean;
   lawyer_review_status: string;
   flagged_by_change_id: number | null;
   rendered_prose: string | null;
@@ -133,6 +135,7 @@ export default async function MandatePage({
     reviewUses.every(
       (use) =>
         use.lawyer_review_status === "approved" &&
+        !use.requires_regeneration &&
         use.flagged_by_change_id === null &&
         use.citations.every((citation) => citation.source_status === "verified"),
     );
@@ -225,7 +228,7 @@ export default async function MandatePage({
               <h2 className="text-base font-semibold">Dokumentenprüfung</h2>
               <p className="text-xs text-neutral-600">
                 Je Template wird die neueste Fassung angezeigt. Quellenänderungen erzwingen
-                eine erneute Erstellung und Freigabe.
+                eine erneute Erstellung und Freigabe. Neue Template-Fassungen ebenfalls.
               </p>
             </div>
             {exportReady && (
@@ -247,6 +250,12 @@ export default async function MandatePage({
                       Version {use.template_version} · {reviewStatusLabel(use.lawyer_review_status)}
                       {use.flagged_by_change_id && ` · Quellenänderung ${use.flagged_by_change_id}`}
                     </p>
+                    {use.requires_regeneration && (
+                      <p className="mt-1 text-xs text-amber-800">
+                        Neue Template-Fassung {use.current_template_version ?? "verfügbar"}:
+                        Entwurf erneut erzeugen.
+                      </p>
+                    )}
                   </div>
                   {mandate.state === "in_review" && (
                     <form action={reviewClause} className="flex gap-2">
@@ -257,6 +266,7 @@ export default async function MandatePage({
                         value="approved"
                         disabled={
                           use.lawyer_review_status === "citation_failed" ||
+                          use.requires_regeneration ||
                           use.flagged_by_change_id !== null ||
                           use.citations.some((citation) => citation.source_status !== "verified")
                         }

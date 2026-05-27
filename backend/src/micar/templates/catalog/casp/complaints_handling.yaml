@@ -1,9 +1,10 @@
 clause_key: complaints_handling
 track: casp
-version: "0.1.0"
+version: "0.2.0"
 title: "Beschwerdeverfahren (Art. 71 MiCAR)"
 anchor_refs:
   - "Art. 71 VO (EU) 2023/1114 (MiCAR)"
+  - "VO (EU) 2025/294 (MiCAR-CASP-Beschwerde-RTS)"
 required_sections:
   - entity
   - complaints
@@ -20,6 +21,7 @@ prose_skeleton: |
   Eine jährliche Auswertung ist vorgesehen: {{ fact:complaints.annual_report_planned }}.
 
   [Lawyer-Review: Kostenfreiheit, Formularzugang, Fristen, Dokumentation und
-   Kundenkommunikation in der finalen Verfahrensbeschreibung prüfen.]
+   Kundenkommunikation nach Art. 71 MiCAR und VO (EU) 2025/294 in der finalen
+   Verfahrensbeschreibung prüfen.]
 author_note: "Finalise operational deadlines and complaint-channel ownership."
 conditional_on_services: []

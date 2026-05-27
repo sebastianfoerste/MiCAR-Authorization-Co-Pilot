@@ -1,6 +1,6 @@
 clause_key: authorization_application_art
 track: art
-version: "0.1.0"
+version: "0.2.0"
 title: "Antrag auf Zulassung als Emittent vermögenswertereferenzierter Token (Art. 18 MiCAR)"
 anchor_refs:
   - "Art. 16 VO (EU) 2023/1114 (MiCAR)"
@@ -8,6 +8,8 @@ anchor_refs:
   - "Art. 34 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 35 VO (EU) 2023/1114 (MiCAR)"
   - "Art. 36 VO (EU) 2023/1114 (MiCAR)"
+  - "VO (EU) 2025/1125 (MiCAR-ART-Antrags-RTS)"
+  - "VO (EU) 2025/1126 (MiCAR-ART-Antrags-ITS)"
 required_sections:
   - issuer_entity_art
   - token_art
@@ -31,6 +33,7 @@ prose_skeleton: |
   {{ fact:reserve_art.reserve_composition }}.
 
   [Lawyer-Review: Antragsunterlagen, Eigenmittelberechnung und Reservekonzept
-   vollständig mit Art. 18 sowie Art. 34 bis 36 MiCAR abgleichen.]
+   vollständig mit Art. 18 sowie Art. 34 bis 36 MiCAR und den Form- und
+   Verfahrensvorgaben der VO (EU) 2025/1125 und VO (EU) 2025/1126 abgleichen.]
 author_note: "Review issuer eligibility, filing perimeter and all annexes before approval."
 conditional_on_services: []

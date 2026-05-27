@@ -1,6 +1,8 @@
 """Template registry + governance template smoke tests."""
+
 from __future__ import annotations
 
+from micar.anchors.seed_level2 import all_level2
 from micar.templates.registry import load_registry
 from micar.tracks.registry import all_tracks
 
@@ -42,3 +44,20 @@ def test_anchor_refs_are_nonempty_for_authored_templates() -> None:
     reg = load_registry()
     for tpl in reg:
         assert tpl.anchor_refs, f"{tpl.track}/{tpl.clause_key} has no anchor_refs"
+
+
+def test_level2_template_references_are_registered_official_sources() -> None:
+    reg = load_registry()
+    known_level2 = {anchor.citation_canonical for anchor in all_level2()}
+    referenced_level2 = {ref for template in reg for ref in template.anchor_refs if "MiCAR-" in ref}
+    casp_application = reg.get("casp", "authorization_application")
+    art_application = reg.get("art", "authorization_application_art")
+    emt_whitepaper = reg.get("emt", "whitepaper_emt")
+
+    assert referenced_level2 == known_level2
+    assert casp_application is not None
+    assert art_application is not None
+    assert emt_whitepaper is not None
+    assert "VO (EU) 2025/305 (MiCAR-CASP-Antrags-RTS)" in casp_application.anchor_refs
+    assert "VO (EU) 2025/1125 (MiCAR-ART-Antrags-RTS)" in art_application.anchor_refs
+    assert "VO (EU) 2024/2984 (MiCAR-Whitepaper-ITS)" in emt_whitepaper.anchor_refs

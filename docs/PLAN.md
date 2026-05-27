@@ -17,6 +17,9 @@ The codebase currently contains:
   five-section EMT workflow.
 - A MiCAR anchor library with official German article refresh from the
   Publications Office CELEX source.
+- An official German-text refresh for seven adopted Level 2 instruments tied
+  to live CASP, ART and EMT templates: CASP authorisation, complaints and
+  conflicts, ART authorisation and ART/EMT whitepaper format.
 - A curator verification endpoint for fetched anchor fingerprints.
 - Eighteen authored structural templates: nine CASP, five ART and four EMT.
 - Manual public-source text ingestion for supplementary anchors, fingerprinted
@@ -28,10 +31,12 @@ The codebase currently contains:
 - Automated browser regression checks for malformed development identity
   handling and role-gated audit visibility.
 
-External ESMA, EBA and BaFin entries are discovery pointers until a curator
-loads and verifies public source text. Authority-specific automated feeds and
-complete supplementary-source coverage remain future work. This is therefore
-a drafting prototype across three MiCAR tracks.
+The seven Level 2 entries are required citations in the affected templates and
+are fetched from the official Publications Office source. They remain
+unavailable for approval or external synthesis until a curator verifies the
+stored text and fingerprint. External ESMA, EBA and BaFin entries remain
+discovery pointers until a curator loads and verifies public source text. This
+is therefore a drafting prototype across three MiCAR tracks.
 
 ## Control Model
 
@@ -46,18 +51,22 @@ Client confidentiality and source provenance are product requirements:
 6. Identifiable outbound facts require an express configuration approval.
 7. Citation failures prevent clause approval.
 8. Source changes flag affected clauses for regeneration and renewed review.
-9. An export package contains only latest, lawyer-approved clauses whose cited
+9. Superseded template versions require regeneration before approval or export.
+10. An export package contains only latest, lawyer-approved clauses whose cited
    sources are still verified.
 
 ## Next Delivery Stages
 
-1. Perform substantive legal review of all 18 structural templates against the
-   intended filing strategy and competent-authority expectations for each matter.
-2. Select, ingest and review the supplementary Level 2 and Level 3 materials
-   required for each track, beginning with sources needed by live template use.
-3. Add authority-specific automated monitoring only after stable official
-   source endpoints and change-review responsibilities are defined.
-4. Add production authentication, deployment configuration and browser-level
+1. Curator-review the fetched Level 2 source texts and perform substantive
+   legal review of the seven affected templates against their adopted RTS and
+   ITS requirements.
+2. Review the remaining structural templates against the intended filing
+   strategy and competent-authority expectations for each matter.
+3. Select and review the required Level 3 materials, beginning with sources
+   needed by live template use, before adding them as mandatory citations.
+4. Add further authority-specific automated monitoring only after stable
+   official source endpoints and change-review responsibilities are defined.
+5. Add production authentication, deployment configuration and browser-level
    coverage for complete drafting and package-review workflows before live
    mandate use.
 

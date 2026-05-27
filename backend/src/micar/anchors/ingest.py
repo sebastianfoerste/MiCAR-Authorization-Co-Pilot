@@ -12,9 +12,14 @@ Two operating modes:
       Office CELEX endpoint and stores article text with a source fingerprint.
       Refreshed text remains `fetched_unverified` until curator approval.
 
+  uv run python -m micar.anchors.ingest eurlex-level2
+      Fetches official German text for the adopted Level 2 instruments cited
+      by the live CASP, ART and EMT templates.
+
 The seed mode creates unverified structural pointers without an external
-network dependency. The eurlex mode performs the live official MiCAR refresh.
+network dependency. Official refresh modes perform live official-source loads.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -30,6 +35,7 @@ from sqlalchemy import select
 
 from micar.anchors.changes import record_anchor_change
 from micar.anchors.seed_external import all_external
+from micar.anchors.seed_level2 import all_level2, official_level2_instruments
 from micar.anchors.seed_micar import SeedAnchor, all_micar, micar_articles
 from micar.compliance.audit import write_audit
 from micar.models import Anchor, SourceStatus, session_scope
@@ -43,6 +49,14 @@ class OfficialArticle:
     title: str
     body: str
     fingerprint: str
+
+
+@dataclass(frozen=True)
+class OfficialDocument:
+    citation_canonical: str
+    body: str
+    fingerprint: str
+    source_url: str
 
 
 def _upsert(session, seed: SeedAnchor) -> tuple[Anchor, bool]:
@@ -108,9 +122,7 @@ def parse_official_micar_articles(document: str) -> dict[int, OfficialArticle]:
         title = title_node.get_text(" ", strip=True) if title_node else ""
         body = "\n".join(node.stripped_strings)
         fingerprint = hashlib.sha256(body.encode("utf-8")).hexdigest()
-        articles[number] = OfficialArticle(
-            number=number, title=title, body=body, fingerprint=fingerprint
-        )
+        articles[number] = OfficialArticle(number=number, title=title, body=body, fingerprint=fingerprint)
     return articles
 
 
@@ -128,6 +140,42 @@ def fetch_official_micar_articles() -> dict[int, OfficialArticle]:
     return articles
 
 
+def parse_official_level2_document(
+    document: str, *, citation_canonical: str, instrument_number: str, source_url: str
+) -> OfficialDocument:
+    """Extract full German text for one adopted Level 2 instrument."""
+    soup = BeautifulSoup(document, "xml")
+    body = "\n".join(soup.stripped_strings)
+    if len(body) < 500 or instrument_number not in body or "VERORDNUNG" not in body:
+        raise ValueError(f"official source did not contain expected instrument {instrument_number}")
+    return OfficialDocument(
+        citation_canonical=citation_canonical,
+        body=body,
+        fingerprint=hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        source_url=source_url,
+    )
+
+
+def fetch_official_level2_documents() -> dict[str, OfficialDocument]:
+    documents: dict[str, OfficialDocument] = {}
+    for instrument in official_level2_instruments():
+        response = httpx.get(
+            instrument.source_url,
+            headers={"Accept": "application/xhtml+xml", "Accept-Language": "deu"},
+            follow_redirects=True,
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        document = parse_official_level2_document(
+            response.text,
+            citation_canonical=instrument.citation_canonical,
+            instrument_number=instrument.instrument_number,
+            source_url=instrument.source_url,
+        )
+        documents[instrument.citation_canonical] = document
+    return documents
+
+
 def ingest_official_micar_articles(
     articles: dict[int, OfficialArticle] | None = None,
 ) -> dict[str, int]:
@@ -143,8 +191,7 @@ def ingest_official_micar_articles(
             article = official[number]
             prior_fingerprint = row.source_fingerprint
             was_verified_unchanged = (
-                row.source_status == SourceStatus.VERIFIED.value
-                and prior_fingerprint == article.fingerprint
+                row.source_status == SourceStatus.VERIFIED.value and prior_fingerprint == article.fingerprint
             )
             row.body = article.body
             row.url = f"{OFFICIAL_MICAR_SOURCE_URL}#art_{number}"
@@ -186,19 +233,75 @@ def ingest_official_micar_articles(
     }
 
 
+def ingest_official_level2_documents(
+    documents: dict[str, OfficialDocument] | None = None,
+) -> dict[str, int]:
+    official = documents or fetch_official_level2_documents()
+    inserted = 0
+    refreshed = 0
+    preserved_verified = 0
+    changes_detected = 0
+    now = datetime.now(UTC)
+    with session_scope() as session:
+        for seed in all_level2():
+            row, created = _upsert(session, seed)
+            document = official[seed.citation_canonical]
+            prior_fingerprint = row.source_fingerprint
+            was_verified_unchanged = (
+                row.source_status == SourceStatus.VERIFIED.value and prior_fingerprint == document.fingerprint
+            )
+            row.body = document.body
+            row.url = document.source_url
+            row.source_fingerprint = document.fingerprint
+            row.source_retrieved_at = now
+            if was_verified_unchanged:
+                preserved_verified += 1
+            else:
+                row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
+                row.reviewed_at = None
+                row.reviewed_by = None
+            if prior_fingerprint and prior_fingerprint != document.fingerprint:
+                record_anchor_change(
+                    session,
+                    anchor=row,
+                    prior_fingerprint=prior_fingerprint,
+                    source_url=row.url,
+                    summary="Official Level 2 instrument fingerprint changed; curator verification required.",
+                )
+                changes_detected += 1
+            inserted += int(created)
+            refreshed += 1
+        write_audit(
+            session,
+            kind="anchor.official.refresh",
+            payload={
+                "source": "official_micar_level2",
+                "inserted": inserted,
+                "refreshed": refreshed,
+                "preserved_verified": preserved_verified,
+                "changes_detected": changes_detected,
+            },
+        )
+    return {
+        "inserted": inserted,
+        "refreshed": refreshed,
+        "preserved_verified": preserved_verified,
+        "changes_detected": changes_detected,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="micar.anchors.ingest")
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("seed", help="Load hand-authored seed corpus")
     eurlex = sub.add_parser("eurlex", help="Refresh MiCAR article text from official CELEX source")
     eurlex.add_argument("--regulation", required=True)
+    sub.add_parser("eurlex-level2", help="Refresh official Level 2 text cited by templates")
 
     args = parser.parse_args(argv)
     if args.cmd == "seed":
-        result = ingest_seed(all_micar() + all_external())
-        print(
-            f"seed ingest: inserted={result['inserted']} updated={result['updated']}"
-        )
+        result = ingest_seed(all_micar() + all_level2() + all_external())
+        print(f"seed ingest: inserted={result['inserted']} updated={result['updated']}")
         return 0
     if args.cmd == "eurlex":
         if args.regulation != "2023/1114":
@@ -206,6 +309,15 @@ def main(argv: list[str] | None = None) -> int:
         result = ingest_official_micar_articles()
         print(
             "official ingest: "
+            f"inserted={result['inserted']} refreshed={result['refreshed']} "
+            f"preserved_verified={result['preserved_verified']} "
+            f"changes_detected={result['changes_detected']}"
+        )
+        return 0
+    if args.cmd == "eurlex-level2":
+        result = ingest_official_level2_documents()
+        print(
+            "official Level 2 ingest: "
             f"inserted={result['inserted']} refreshed={result['refreshed']} "
             f"preserved_verified={result['preserved_verified']} "
             f"changes_detected={result['changes_detected']}"
