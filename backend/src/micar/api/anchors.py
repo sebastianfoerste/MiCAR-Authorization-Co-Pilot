@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import or_, select
 
+from micar.anchors.changes import record_anchor_change
 from micar.api.auth import get_current_user
 from micar.compliance.audit import write_audit
 from micar.models import (
@@ -16,7 +17,6 @@ from micar.models import (
     AnchorAuthority,
     AnchorChange,
     SourceStatus,
-    TemplateUse,
     TriageStatus,
     UserRole,
     session_scope,
@@ -110,19 +110,6 @@ def _to_out(a: Anchor) -> AnchorOut:
 def _require_curator(user: UserOut) -> None:
     if user.role not in {UserRole.CURATOR.value, UserRole.ADMIN.value}:
         raise HTTPException(status_code=403, detail="curator role required")
-
-
-def _flag_template_uses_for_change(
-    *,
-    session,
-    anchor_id: int,
-    change_id: int,
-) -> None:
-    uses = session.execute(select(TemplateUse)).scalars().all()
-    for use in uses:
-        citations = use.citations or []
-        if any(citation.get("anchor_id") == anchor_id for citation in citations):
-            use.flagged_by_change_id = change_id
 
 
 @router.get("", response_model=AnchorListOut)
@@ -225,19 +212,14 @@ def ingest_public_source_text(
             row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
             row.reviewed_at = None
             row.reviewed_by = None
-            change = AnchorChange(
-                anchor_id_prev=row.id if prior_fingerprint else None,
-                anchor_id_new=row.id,
-                kind="amended" if prior_fingerprint else "new",
+            change = record_anchor_change(
+                session,
+                anchor=row,
+                prior_fingerprint=prior_fingerprint,
                 source_url=body.source_url,
                 summary="Public source text fingerprint requires curator verification.",
             )
-            session.add(change)
-            session.flush()
             change_id = change.id
-            _flag_template_uses_for_change(
-                session=session, anchor_id=row.id, change_id=change.id
-            )
         elif row.source_status != SourceStatus.VERIFIED.value:
             row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
 

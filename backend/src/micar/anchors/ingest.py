@@ -28,8 +28,10 @@ import httpx
 from bs4 import BeautifulSoup
 from sqlalchemy import select
 
+from micar.anchors.changes import record_anchor_change
 from micar.anchors.seed_external import all_external
 from micar.anchors.seed_micar import SeedAnchor, all_micar, micar_articles
+from micar.compliance.audit import write_audit
 from micar.models import Anchor, SourceStatus, session_scope
 
 OFFICIAL_MICAR_SOURCE_URL = "https://publications.europa.eu/resource/celex/32023R1114"
@@ -133,14 +135,16 @@ def ingest_official_micar_articles(
     inserted = 0
     refreshed = 0
     preserved_verified = 0
+    changes_detected = 0
     now = datetime.now(UTC)
     with session_scope() as session:
         for number, seed in enumerate(micar_articles(), start=1):
             row, created = _upsert(session, seed)
             article = official[number]
+            prior_fingerprint = row.source_fingerprint
             was_verified_unchanged = (
                 row.source_status == SourceStatus.VERIFIED.value
-                and row.source_fingerprint == article.fingerprint
+                and prior_fingerprint == article.fingerprint
             )
             row.body = article.body
             row.url = f"{OFFICIAL_MICAR_SOURCE_URL}#art_{number}"
@@ -152,12 +156,33 @@ def ingest_official_micar_articles(
                 row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
                 row.reviewed_at = None
                 row.reviewed_by = None
+            if prior_fingerprint and prior_fingerprint != article.fingerprint:
+                record_anchor_change(
+                    session,
+                    anchor=row,
+                    prior_fingerprint=prior_fingerprint,
+                    source_url=row.url,
+                    summary="Official MiCAR article fingerprint changed; curator verification required.",
+                )
+                changes_detected += 1
             inserted += int(created)
             refreshed += 1
+        write_audit(
+            session,
+            kind="anchor.official.refresh",
+            payload={
+                "source": "official_micar",
+                "inserted": inserted,
+                "refreshed": refreshed,
+                "preserved_verified": preserved_verified,
+                "changes_detected": changes_detected,
+            },
+        )
     return {
         "inserted": inserted,
         "refreshed": refreshed,
         "preserved_verified": preserved_verified,
+        "changes_detected": changes_detected,
     }
 
 
@@ -182,7 +207,8 @@ def main(argv: list[str] | None = None) -> int:
         print(
             "official ingest: "
             f"inserted={result['inserted']} refreshed={result['refreshed']} "
-            f"preserved_verified={result['preserved_verified']}"
+            f"preserved_verified={result['preserved_verified']} "
+            f"changes_detected={result['changes_detected']}"
         )
         return 0
     return 1

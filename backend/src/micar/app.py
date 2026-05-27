@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from micar.api import anchors as anchors_api
 from micar.api import artifacts as artifacts_api
+from micar.api import audit as audit_api
 from micar.api import auth as auth_api
 from micar.api import intake as intake_api
 from micar.api import mandates as mandates_api
@@ -42,6 +43,7 @@ def create_app() -> FastAPI:
     app.include_router(intake_api.router)
     app.include_router(anchors_api.router)
     app.include_router(artifacts_api.router)
+    app.include_router(audit_api.router)
 
     @app.get("/healthz", tags=["meta"])
     def healthz() -> dict[str, str]:

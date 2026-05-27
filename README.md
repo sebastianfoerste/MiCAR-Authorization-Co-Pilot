@@ -59,11 +59,12 @@ The following controls are enforced in code:
 - External synthesis requires curator-verified source text for each cited anchor.
 - Mandate facts are redacted before outbound processing unless
   `ALLOW_UNREDACTED_EXTERNAL_CLIENT_DATA=true` has expressly been configured.
-- Changed supplementary source text creates a curator-visible review item and
-  flags clauses that used the prior anchor.
+- Changed official MiCAR or supplementary source text creates a curator-visible
+  review item and flags clauses that used the prior anchor.
 - Failed citation verification prevents clause approval.
 - Only the latest lawyer-approved clauses with currently verified sources can
   enter an export package.
+- Administrators can review redacted operational events in the audit protocol.
 
 The source workflow is:
 
@@ -77,6 +78,11 @@ cd backend && uv run python -m micar.anchors.ingest eurlex --regulation 2023/111
 # A curator or admin reviews the fetched source and verifies its fingerprint
 # through POST /anchors/{anchor_id}/verify.
 ```
+
+If a later official MiCAR refresh produces a different stored fingerprint, the
+application marks that article unverified, places the change in the pending
+queue and flags rendered clauses citing the article. The initial official load
+remains an unverified source import requiring curator review.
 
 ESMA, EBA and BaFin entries initially remain unverified discovery pointers.
 A curator may load public official text in the anchor library UI or through
@@ -111,9 +117,9 @@ make dev-frontend
 
 ## Current Status
 
-- Implemented: authentication bridge, owner-scoped mandates, CASP, ART and EMT intake, 18 track templates, official MiCAR article refresh, manual supplementary-source ingestion, source-change review queue, document review cockpit and approved DOCX package generation.
-- Implemented safety work: outbound-processing gate, reversible redaction, verified-source approval and export gate, source-change flagging, citation-failed approval block and persisted template records.
-- Outstanding production work: authority-specific automated supplementary feeds, Level 2 and Level 3 reviewed source coverage, production deployment, operational audit review and browser-level end-to-end checks.
+- Implemented: authentication bridge, owner-scoped mandates, CASP, ART and EMT intake, 18 track templates, official MiCAR article refresh, manual supplementary-source ingestion, source-change review queue, redacted admin audit view, document review cockpit and approved DOCX package generation.
+- Implemented safety work: outbound-processing gate, reversible redaction, verified-source approval and export gate, official and supplementary source-change flagging, citation-failed approval block, audit payload minimisation and persisted template records.
+- Outstanding production work: authority-specific automated supplementary feeds, Level 2 and Level 3 reviewed source coverage, production deployment hardening and automated browser-level end-to-end checks.
 
 No client matter should be processed externally until the required professional,
 confidentiality and processing approvals have been documented.

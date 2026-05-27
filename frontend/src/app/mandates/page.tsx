@@ -29,6 +29,11 @@ export default async function MandatesPage() {
           </p>
         </div>
         <nav className="flex items-center gap-4 text-sm">
+          {user?.role === "admin" && (
+            <Link href="/audit" className="text-neutral-600 underline hover:text-neutral-900">
+              Audit-Protokoll
+            </Link>
+          )}
           <Link href="/anchors" className="text-neutral-600 underline hover:text-neutral-900">
             Anchor-Bibliothek
           </Link>

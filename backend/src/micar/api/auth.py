@@ -18,6 +18,7 @@ from datetime import UTC, datetime
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import EmailStr, TypeAdapter, ValidationError
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
@@ -29,6 +30,7 @@ from micar.schemas import UserOut
 
 router = APIRouter(tags=["auth"])
 bearer = HTTPBearer(auto_error=True)
+email_adapter = TypeAdapter(EmailStr)
 
 
 def _decode(token: str) -> dict:
@@ -56,7 +58,13 @@ def _decode(token: str) -> dict:
 
 def _provision_or_touch(session: Session, *, email: str, name: str | None) -> User:
     settings = get_settings()
-    email_norm = email.lower().strip()
+    try:
+        email_norm = str(email_adapter.validate_python(email)).lower().strip()
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid sub claim email",
+        ) from exc
     allowlist = settings.allowlisted_emails
     if not allowlist and not settings.allow_unrestricted_dev_auth:
         raise HTTPException(
@@ -97,7 +105,7 @@ def _provision_or_touch(session: Session, *, email: str, name: str | None) -> Us
                 session,
                 kind="user.provisioned",
                 actor_id=user.id,
-                payload={"email": email_norm},
+                payload={"user_id": user.id},
             )
         user.last_login_at = now
         if name and not user.name:

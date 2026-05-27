@@ -14,7 +14,7 @@ from fastapi import HTTPException
 
 from micar.api.auth import _decode, _provision_or_touch
 from micar.config import get_settings
-from micar.models import User
+from micar.models import AuditEvent, User
 
 
 def _mint(secret: str, *, iss: str, aud: str, sub: str = "user@example.com") -> str:
@@ -111,6 +111,18 @@ def test_provisioning_denies_empty_allowlist_without_dev_override(monkeypatch) -
         get_settings.cache_clear()
 
 
+def test_provisioning_rejects_invalid_email_claim_before_database_access(monkeypatch) -> None:
+    monkeypatch.setenv("USER_EMAIL_ALLOWLIST", "")
+    monkeypatch.setenv("ALLOW_UNRESTRICTED_DEV_AUTH", "true")
+    get_settings.cache_clear()
+    try:
+        with pytest.raises(HTTPException) as exc:
+            _provision_or_touch(None, email="audit-browser@example.test", name=None)  # type: ignore[arg-type]
+        assert exc.value.status_code == 401
+    finally:
+        get_settings.cache_clear()
+
+
 class _Result:
     def __init__(self, *, one_or_none=None, one=None) -> None:
         self._one_or_none = one_or_none
@@ -140,6 +152,45 @@ class _ConcurrentProvisionSession:
 
     def flush(self) -> None:
         return None
+
+
+class _NewProvisionSession:
+    def __init__(self, user: User) -> None:
+        self.user = user
+        self.calls = 0
+        self.added: list[object] = []
+
+    def execute(self, _statement):
+        self.calls += 1
+        if self.calls == 1:
+            return _Result(one_or_none=None)
+        return _Result(one_or_none=self.user.id)
+
+    def get(self, _model, _identifier: int) -> User:
+        return self.user
+
+    def add(self, row: object) -> None:
+        self.added.append(row)
+
+    def flush(self) -> None:
+        return None
+
+
+def test_new_user_audit_payload_does_not_include_email(monkeypatch) -> None:
+    monkeypatch.setenv("USER_EMAIL_ALLOWLIST", "")
+    monkeypatch.setenv("ALLOW_UNRESTRICTED_DEV_AUTH", "true")
+    get_settings.cache_clear()
+    user = User(id=7, email="user@example.com", role="lawyer", name=None)
+    session = _NewProvisionSession(user)
+    try:
+        result = _provision_or_touch(  # type: ignore[arg-type]
+            session, email="user@example.com", name="Test User"
+        )
+        assert result is user
+        audit = next(row for row in session.added if isinstance(row, AuditEvent))
+        assert audit.payload_redacted == {"user_id": 7}
+    finally:
+        get_settings.cache_clear()
 
 
 def test_concurrent_provisioning_reloads_conflicting_user_without_duplicate_audit(monkeypatch) -> None:

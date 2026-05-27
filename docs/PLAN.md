@@ -21,7 +21,10 @@ The codebase currently contains:
 - Eighteen authored structural templates: nine CASP, five ART and four EMT.
 - Manual public-source text ingestion for supplementary anchors, fingerprinted
   change triage and source verification.
+- Pending-change propagation from amended official MiCAR fingerprints to
+  affected rendered clauses.
 - Clause-level review with provenance display and approved DOCX package export.
+- An administrator-only view of redacted operational audit events.
 
 External ESMA, EBA and BaFin entries are discovery pointers until a curator
 loads and verifies public source text. Authority-specific automated feeds and
@@ -52,8 +55,8 @@ Client confidentiality and source provenance are product requirements:
    required for each track, beginning with sources needed by live template use.
 3. Add authority-specific automated monitoring only after stable official
    source endpoints and change-review responsibilities are defined.
-4. Add production authentication, deployment configuration, operational audit
-   review and browser-level end-to-end checks before live mandate use.
+4. Add production authentication, deployment configuration and automated
+   browser-level end-to-end checks before live mandate use.
 
 ## Verification Standard
 
