@@ -144,6 +144,15 @@ test("labels fetched joint EBA and ESMA sources in the anchor library", async ({
   await expect(item).toContainText("Text geladen, Prüfung ausstehend");
   await expect(item).toContainText("Fingerprint: abcdef123456...34567890");
   await expect(item).toContainText("Abruf:");
+  await expect(item.getByRole("link", { name: "Quellentext prüfen" })).toBeVisible();
   await expect(item.getByLabel("Review-Notiz zur Quellenprüfung")).toBeVisible();
   await expect(item.getByRole("button", { name: "Mit Review-Notiz freigeben" })).toBeVisible();
+
+  await item.getByRole("link", { name: "Quellentext prüfen" }).click();
+
+  await expect(page).toHaveURL(/\/anchors\/\d+$/);
+  await expect(page.getByRole("heading", { name: "Quellenprüfung" })).toBeVisible();
+  await expect(page.getByText(jointGuidelineCitation)).toBeVisible();
+  await expect(page.getByText("abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890")).toBeVisible();
+  await expect(page.getByText("Amtlicher Testquellentext für die Browserprüfung.")).toBeVisible();
 });

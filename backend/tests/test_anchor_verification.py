@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from micar.api.anchors import AnchorVerifyIn, _to_out
+from micar.api.anchors import AnchorVerifyIn, _to_out, _to_source_out
 from micar.models import Anchor
 
 
@@ -33,3 +33,21 @@ def test_anchor_output_includes_review_note() -> None:
     )
 
     assert _to_out(anchor).review_note == "Amtliche Fundstelle und Fingerprint geprüft."
+
+
+def test_anchor_source_output_includes_full_body_metadata() -> None:
+    anchor = Anchor(
+        id=1,
+        level="level_3",
+        authority="eba_esma",
+        citation_canonical="EBA/ESMA source",
+        version="review",
+        body="Amtlicher Quellentext.",
+        source_status="fetched_unverified",
+    )
+
+    out = _to_source_out(anchor)
+
+    assert out.body == "Amtlicher Quellentext."
+    assert out.body_char_count == 22
+    assert out.title_or_excerpt == "Amtlicher Quellentext."

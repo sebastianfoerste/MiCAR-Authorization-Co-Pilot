@@ -52,6 +52,11 @@ class AnchorListOut(BaseModel):
     total: int
 
 
+class AnchorSourceOut(AnchorOut):
+    body: str | None
+    body_char_count: int
+
+
 class AnchorVerifyIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -116,6 +121,14 @@ def _to_out(a: Anchor) -> AnchorOut:
         source_retrieved_at=a.source_retrieved_at,
         reviewed_at=a.reviewed_at,
         review_note=a.review_note,
+    )
+
+
+def _to_source_out(a: Anchor) -> AnchorSourceOut:
+    return AnchorSourceOut(
+        **_to_out(a).model_dump(),
+        body=a.body,
+        body_char_count=len(a.body or ""),
     )
 
 
@@ -185,6 +198,16 @@ def get_anchor(anchor_id: int, _user: UserOut = Depends(get_current_user)) -> An
         if not row:
             raise HTTPException(status_code=404, detail="anchor not found")
         return _to_out(row)
+
+
+@router.get("/{anchor_id}/source", response_model=AnchorSourceOut)
+def get_anchor_source(anchor_id: int, user: UserOut = Depends(get_current_user)) -> AnchorSourceOut:
+    _require_curator(user)
+    with session_scope() as session:
+        row = session.get(Anchor, anchor_id)
+        if not row:
+            raise HTTPException(status_code=404, detail="anchor not found")
+        return _to_source_out(row)
 
 
 @router.post("/{anchor_id}/source-text", response_model=AnchorOut)

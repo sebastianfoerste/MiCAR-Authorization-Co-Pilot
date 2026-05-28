@@ -272,16 +272,23 @@ export default async function AnchorsPage({
                   {sourceStatusLabel(a.source_status)}
                 </span>
               </div>
-              {a.url && (
-                <a
-                  href={a.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-blue-700 underline"
-                >
-                  Quelle ↗
-                </a>
-              )}
+              <div className="flex shrink-0 items-center gap-3">
+                {canCurate && (a.source_fingerprint || a.title_or_excerpt) && (
+                  <Link href={`/anchors/${a.id}`} className="text-xs text-blue-700 underline">
+                    Quellentext prüfen
+                  </Link>
+                )}
+                {a.url && (
+                  <a
+                    href={a.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-blue-700 underline"
+                  >
+                    Quelle ↗
+                  </a>
+                )}
+              </div>
             </div>
             {a.title_or_excerpt && (
               <p className="mt-1 text-sm text-neutral-700">{a.title_or_excerpt}</p>
