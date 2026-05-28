@@ -1,4 +1,5 @@
 """ART issuer workflow under Art. 16 ff. MiCAR."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -25,6 +26,10 @@ class ARTTrack:
             TemplateRef("authorization_application_art", "Antrag auf Zulassung (Art. 18)"),
             TemplateRef("whitepaper_art", "Krypto-Werte-Whitepaper für ART (Annex II)"),
             TemplateRef("reserve_policy_art", "Vermögenswertreserve ART (Art. 36)"),
+            TemplateRef(
+                "liquidity_management_policy_art",
+                "Liquiditätsmanagement und Liquiditätsstresstests (Art. 35 und 45)",
+            ),
             TemplateRef("recovery_plan_art", "Sanierungsplan (Art. 46)"),
             TemplateRef("redemption_plan_art", "Rücknahmeplan (Art. 47)"),
         ]

@@ -9,13 +9,14 @@ These models are deliberately fact-only: they capture *what* the matter is.
 The legal characterisation lives in the templates, where anchors + facts +
 prose are composed in the synthesis pipeline.
 """
+
 from __future__ import annotations
 
 from datetime import date
 from enum import StrEnum
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class CASPServiceCode(StrEnum):
@@ -219,13 +220,35 @@ class ARTGovernanceSection(BaseModel):
 class ARTReserveSection(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    reserve_composition: str = Field(
-        description="Vorgesehene Zusammensetzung der Vermögenswertreserve."
-    )
+    reserve_composition: str = Field(description="Vorgesehene Zusammensetzung der Vermögenswertreserve.")
     custody_arrangements: str
     investment_policy: str
     liquidity_management: str
     independent_audit_arrangements: str
+    significant_token: bool = Field(
+        description="Token ist signifikant oder soll als signifikant behandelt werden."
+    )
+    authority_imposed_liquidity_requirements: bool = Field(
+        description=(
+            "Zuständige Behörde verlangt die zusätzlichen Liquiditätsanforderungen "
+            "für einen nicht signifikanten Token."
+        )
+    )
+    liquidity_stress_testing_framework: str = Field(
+        default="",
+        description=(
+            "Rahmen für Liquiditätsstresstests, Szenarien und Eskalation. "
+            "Erforderlich bei signifikanten oder behördlich erfassten Token."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def require_stress_testing_framework_when_in_scope(self) -> ARTReserveSection:
+        if (
+            self.significant_token or self.authority_imposed_liquidity_requirements
+        ) and not self.liquidity_stress_testing_framework.strip():
+            raise ValueError("liquidity_stress_testing_framework is required for in-scope liquidity cases")
+        return self
 
 
 class ARTRedemptionSection(BaseModel):
@@ -279,6 +302,30 @@ class EMTFundsSection(BaseModel):
     investment_arrangements: str
     safeguarding_arrangements: str
     liquidity_controls: str
+    significant_token: bool = Field(
+        description="E-Geld-Token ist signifikant oder soll als signifikant behandelt werden."
+    )
+    authority_imposed_liquidity_requirements: bool = Field(
+        description=(
+            "Zuständige Behörde verlangt die zusätzlichen Liquiditätsanforderungen "
+            "für einen nicht signifikanten E-Geld-Token."
+        )
+    )
+    liquidity_stress_testing_framework: str = Field(
+        default="",
+        description=(
+            "Rahmen für Liquiditätsstresstests, Szenarien und Eskalation. "
+            "Erforderlich bei signifikanten oder behördlich erfassten E-Geld-Token."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def require_stress_testing_framework_when_in_scope(self) -> EMTFundsSection:
+        if (
+            self.significant_token or self.authority_imposed_liquidity_requirements
+        ) and not self.liquidity_stress_testing_framework.strip():
+            raise ValueError("liquidity_stress_testing_framework is required for in-scope liquidity cases")
+        return self
 
 
 class EMTRedemptionSection(BaseModel):

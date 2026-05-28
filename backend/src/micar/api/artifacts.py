@@ -39,7 +39,7 @@ from micar.models import (
     session_scope,
 )
 from micar.schemas import UserOut
-from micar.templates.registry import TemplateDef, load_registry
+from micar.templates.registry import FactCondition, TemplateDef, load_registry
 from micar.templates.renderer import RenderOutcome, render_template
 from micar.tracks.registry import get_track
 
@@ -116,7 +116,37 @@ class ReviewDecisionOut(BaseModel):
     lawyer_review_status: str
 
 
-def _applicable_templates(mandate: Mandate, services: list[str]) -> list[TemplateDef]:
+def _intake_answers_by_section(session, mandate_id: int) -> dict[str, dict]:
+    from micar.models import IntakeSection
+
+    rows = (
+        session.execute(select(IntakeSection).where(IntakeSection.mandate_id == mandate_id)).scalars().all()
+    )
+    return {row.section_key: row.answers for row in rows if isinstance(row.answers, dict)}
+
+
+def _fact_condition_matches(
+    answers_by_section: dict[str, dict],
+    condition: FactCondition,
+) -> bool:
+    section = answers_by_section.get(condition.section)
+    if not isinstance(section, dict):
+        return False
+    return section.get(condition.field) == condition.equals
+
+
+def _fact_conditions_match(
+    answers_by_section: dict[str, dict],
+    conditions: list[FactCondition],
+) -> bool:
+    return not conditions or any(
+        _fact_condition_matches(answers_by_section, condition) for condition in conditions
+    )
+
+
+def _applicable_templates(
+    mandate: Mandate, services: list[str], answers_by_section: dict[str, dict]
+) -> list[TemplateDef]:
     track = get_track(mandate.track)
     if not track:
         return []
@@ -130,6 +160,8 @@ def _applicable_templates(mandate: Mandate, services: list[str]) -> list[Templat
         # from the track ref (the track ref is the source of truth for now).
         cond = list(tref.conditional_on_services) or td.conditional_on_services
         if cond and not any(c in services for c in cond):
+            continue
+        if not _fact_conditions_match(answers_by_section, td.conditional_on_any_facts):
             continue
         out.append(td)
     return out
@@ -222,7 +254,8 @@ def render_mandate(mandate_id: int, user: UserOut = Depends(get_current_user)) -
                 detail=f"mandate state '{m.state}' is not eligible for render",
             )
         services = _selected_services(session, mandate_id)
-        templates = _applicable_templates(m, services)
+        answers_by_section = _intake_answers_by_section(session, mandate_id)
+        templates = _applicable_templates(m, services, answers_by_section)
 
         results: list[RenderResult] = []
         ok_count = 0

@@ -26,6 +26,7 @@ The renderer (see `templates/renderer.py`) takes a Template + intake facts +
 resolved anchors and asks the LLM to produce a RenderedClause(prose, citations).
 The registry itself is pure — it loads, validates, and serves Templates.
 """
+
 from __future__ import annotations
 
 from collections.abc import Iterator
@@ -36,6 +37,16 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 CATALOG_DIR = Path(__file__).parent / "catalog"
+
+
+class FactCondition(BaseModel):
+    """Template condition evaluated against stored intake answers."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    section: str = Field(min_length=1)
+    field: str = Field(min_length=1)
+    equals: bool | str | int | float | None = True
 
 
 class TemplateDef(BaseModel):
@@ -52,6 +63,7 @@ class TemplateDef(BaseModel):
     prose_skeleton: str = ""
     author_note: str = ""
     conditional_on_services: list[str] = Field(default_factory=list)
+    conditional_on_any_facts: list[FactCondition] = Field(default_factory=list)
 
 
 @dataclass(frozen=True)

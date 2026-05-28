@@ -27,6 +27,10 @@ class EMTTrack:
                 "investment_of_funds_emt",
                 "Anlage von im Tausch gegen E-Geld-Token entgegengenommenen Geldbeträgen (Art. 54)",
             ),
+            TemplateRef(
+                "liquidity_management_policy_emt",
+                "Liquiditätsmanagement und Liquiditätsstresstests (Art. 45 und 58)",
+            ),
             TemplateRef("redemption_at_par", "Rücknahme zum Nennwert (Art. 49 Abs. 1)"),
             TemplateRef(
                 "programme_of_operations_emt",

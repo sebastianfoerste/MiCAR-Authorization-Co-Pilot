@@ -1,0 +1,41 @@
+clause_key: liquidity_management_policy_art
+track: art
+version: "0.1.0"
+title: "Liquiditätsmanagement und Liquiditätsstresstests für ART (Art. 35 und 45 MiCAR)"
+anchor_refs:
+  - "Art. 35 VO (EU) 2023/1114 (MiCAR)"
+  - "Art. 45 VO (EU) 2023/1114 (MiCAR)"
+  - "VO (EU) 2025/1264 (MiCAR-Liquiditätsmanagement-RTS)"
+  - "EBA, Leitlinien über Liquiditätsstresstests nach MiCAR, EBA/GL/2024/08, final, 19.6.2024"
+required_sections:
+  - issuer_entity_art
+  - reserve_art
+prose_skeleton: |
+  ## 1. Anwendungsbereich
+
+  Emittent: {{ fact:issuer_entity_art.legal_name }}.
+  Signifikanter Token: {{ fact:reserve_art.significant_token }}.
+  Behördlich auferlegte Liquiditätsanforderungen:
+  {{ fact:reserve_art.authority_imposed_liquidity_requirements }}.
+
+  ## 2. Liquiditätsmanagement und Stresstests
+
+  Liquiditätssteuerung: {{ fact:reserve_art.liquidity_management }}.
+  Stresstestrahmen: {{ fact:reserve_art.liquidity_stress_testing_framework }}.
+  Zusammensetzung der Vermögenswertreserve: {{ fact:reserve_art.reserve_composition }}.
+
+  [Lawyer-Review: Anwendbarkeit der zusätzlichen Liquiditätsanforderungen für
+   signifikante ART oder behördlich erfasste nicht signifikante ART prüfen;
+   Mindestinhalte der VO (EU) 2025/1264 und Parameter der geprüften
+   EBA-Leitlinien in Szenarien, Limits, Eskalation und Reporting überführen.]
+author_note: |
+  Conditional document. Render only when the ART is significant or the competent
+  authority has imposed the Art. 35(4) / Art. 45 liquidity requirements.
+conditional_on_services: []
+conditional_on_any_facts:
+  - section: reserve_art
+    field: significant_token
+    equals: true
+  - section: reserve_art
+    field: authority_imposed_liquidity_requirements
+    equals: true

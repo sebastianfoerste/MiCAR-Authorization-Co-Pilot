@@ -158,6 +158,31 @@ def eba_micar_guideline_anchors() -> list[SeedAnchor]:
         ),
         SeedAnchor(
             citation_canonical=render_citation(
+                EBACitationParts(
+                    document_label="Leitlinien über Liquiditätsstresstests nach MiCAR",
+                    document_id="EBA/GL/2024/08",
+                    version="final",
+                    date="19.6.2024",
+                )
+            ),
+            level=AnchorLevel.LEVEL_3,
+            authority=AnchorAuthority.EBA,
+            url=(
+                "https://www.eba.europa.eu/sites/default/files/2024-08/"
+                "2bd7add3-35b1-40d7-9c45-67c8cccbe97a/"
+                "GL%20on%20liquidity%20stress%20testing%20under%20MiCAR"
+                "%20%28EBA%20GL%202024%2008%29_DE.pdf"
+            ),
+            version="EBA/GL/2024/08",
+            effective_from=date(2024, 9, 30),
+            effective_to=None,
+            title="EBA-Leitlinien über Liquiditätsstresstests nach MiCAR",
+            body="",
+            binding_force_note=binding_force_note(AnchorLevel.LEVEL_3, AnchorAuthority.EBA),
+            tags=("eba", "art", "emt", "liquidity", "stress_testing"),
+        ),
+        SeedAnchor(
+            citation_canonical=render_citation(
                 JointEBAESMACitationParts(
                     document_label="Leitlinien zur Eignung des Leitungsorgans nach MiCAR",
                     eba_document_id="EBA/GL/2024/09",

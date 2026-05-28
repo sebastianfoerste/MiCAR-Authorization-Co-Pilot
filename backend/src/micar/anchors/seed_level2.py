@@ -124,6 +124,19 @@ _INSTRUMENTS = (
         tags=("casp", "market_abuse", "rts"),
     ),
     OfficialLevel2Instrument(
+        instrument_number="2025/1264",
+        celex="32025R1264",
+        short_name="MiCAR-Liquiditätsmanagement-RTS",
+        title=(
+            "Mindestinhalt der Strategien und Verfahren für das Liquiditätsmanagement "
+            "bestimmter ART- und EMT-Emittenten"
+        ),
+        publication_version="2025-10-03",
+        applicable_from=date(2025, 10, 23),
+        act_kind="delegated",
+        tags=("art", "emt", "liquidity", "rts"),
+    ),
+    OfficialLevel2Instrument(
         instrument_number="2025/1125",
         celex="32025R1125",
         short_name="MiCAR-ART-Antrags-RTS",

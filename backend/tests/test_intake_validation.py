@@ -1,4 +1,5 @@
 """Intake validation tests — lock the gate behaviour without a live DB."""
+
 from __future__ import annotations
 
 from micar.intake.validation import (
@@ -146,6 +147,8 @@ def test_art_mandate_ready_gate_passes_with_issuer_sections() -> None:
             "investment_policy": "Liquiditätsorientierte Anlage.",
             "liquidity_management": "Tägliche Liquiditätsprüfung.",
             "independent_audit_arrangements": "Jährliche Prüfung.",
+            "significant_token": False,
+            "authority_imposed_liquidity_requirements": False,
         },
         "redemption_art": {
             "redemption_rights_description": "Rücktauschrecht nach Bedingungen.",
@@ -186,6 +189,8 @@ def test_emt_mandate_ready_gate_passes_with_issuer_sections() -> None:
             "investment_arrangements": "Konservative liquide Anlage.",
             "safeguarding_arrangements": "Gesonderte Sicherung.",
             "liquidity_controls": "Tägliche Überwachung.",
+            "significant_token": False,
+            "authority_imposed_liquidity_requirements": False,
         },
         "redemption_emt": {
             "issue_at_par_process": "Ausgabe zum Nennwert.",
@@ -201,3 +206,40 @@ def test_emt_mandate_ready_gate_passes_with_issuer_sections() -> None:
     }
     ok, blocking = is_mandate_ready_for_generation("emt", sections)
     assert ok, blocking
+
+
+def test_art_liquidity_scope_requires_stress_testing_framework() -> None:
+    ok, errors = is_section_complete(
+        "art",
+        "reserve_art",
+        {
+            "reserve_composition": "Sichteinlagen und liquide Wertpapiere.",
+            "custody_arrangements": "Verwahrung bei Kreditinstituten.",
+            "investment_policy": "Liquiditätsorientierte Anlage.",
+            "liquidity_management": "Tägliche Liquiditätsprüfung.",
+            "independent_audit_arrangements": "Jährliche Prüfung.",
+            "significant_token": True,
+            "authority_imposed_liquidity_requirements": False,
+        },
+    )
+
+    assert not ok
+    assert any("liquidity_stress_testing_framework" in error for error in errors)
+
+
+def test_emt_liquidity_scope_requires_stress_testing_framework() -> None:
+    ok, errors = is_section_complete(
+        "emt",
+        "funds_emt",
+        {
+            "received_funds_process": "Zahlungskonto und täglicher Abgleich.",
+            "investment_arrangements": "Konservative liquide Anlage.",
+            "safeguarding_arrangements": "Gesonderte Sicherung.",
+            "liquidity_controls": "Tägliche Überwachung.",
+            "significant_token": False,
+            "authority_imposed_liquidity_requirements": True,
+        },
+    )
+
+    assert not ok
+    assert any("liquidity_stress_testing_framework" in error for error in errors)

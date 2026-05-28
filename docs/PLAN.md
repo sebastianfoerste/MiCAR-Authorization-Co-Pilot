@@ -17,17 +17,18 @@ The codebase currently contains:
   five-section EMT workflow.
 - A MiCAR anchor library with official German article refresh from the
   Publications Office CELEX source.
-- An official German-text refresh for eight adopted Level 2 instruments tied
+- An official German-text refresh for nine adopted Level 2 instruments tied
   to live CASP, ART and EMT templates: CASP authorisation, complaints,
-  conflicts and market-abuse procedures, ART authorisation and ART/EMT
-  whitepaper format.
+  conflicts and market-abuse procedures, ART authorisation, ART/EMT
+  whitepaper format and conditional ART/EMT liquidity management.
 - A curator verification endpoint for fetched anchor fingerprints.
-- Twenty authored structural templates: nine CASP, five ART and six EMT,
-  including standalone EMT recovery and redemption plans.
+- Twenty-two authored structural templates: nine CASP, six ART and seven EMT,
+  including standalone EMT recovery and redemption plans and conditional ART/EMT
+  liquidity management templates.
 - Official discovery pointers for the EBA ART governance, recovery-plan and
-  redemption-plan guidelines and the joint EBA/ESMA suitability guidelines
-  cited by live templates, with an official PDF refresh command for those four
-  guideline texts.
+  redemption-plan guidelines, EBA liquidity stress-testing guidelines and the
+  joint EBA/ESMA suitability guidelines cited by live templates, with an
+  official PDF refresh command for those five guideline texts.
 - Manual public-source text ingestion for supplementary anchors, fingerprinted
   change triage and source verification.
 - Pending-change propagation from amended official MiCAR fingerprints to
@@ -37,8 +38,8 @@ The codebase currently contains:
 - Automated browser regression checks for malformed development identity
   handling and role-gated audit visibility.
 
-The eight Level 2 entries are required citations in the affected templates and
-are fetched from the official Publications Office source. The four linked EBA
+The nine Level 2 entries are required citations in the affected templates and
+are fetched from the official Publications Office source. The five linked EBA
 and EBA/ESMA guideline entries are fetched from official EBA-hosted PDFs. All
 freshly loaded official text remains unavailable for approval or external
 synthesis until a curator verifies the stored text and fingerprint. Other ESMA,
@@ -69,11 +70,9 @@ Client confidentiality and source provenance are product requirements:
    guideline texts required by live templates.
 2. Perform substantive legal review of each affected template against its
    adopted RTS, ITS and reviewed guideline requirements.
-3. Add conditional sources and intake logic for significant or
-   authority-designated tokens where the specific filing perimeter requires it.
-4. Add further authority-specific automated monitoring only after stable
+3. Add further authority-specific automated monitoring only after stable
    official source endpoints and change-review responsibilities are defined.
-5. Add production authentication, deployment configuration and browser-level
+4. Add production authentication, deployment configuration and browser-level
    coverage for complete drafting and package-review workflows before live
    mandate use.
 
