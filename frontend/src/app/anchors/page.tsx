@@ -82,6 +82,18 @@ function sourceStatusClasses(status: string): string {
   return "bg-amber-50 text-amber-900";
 }
 
+function shortFingerprint(fingerprint: string): string {
+  return `${fingerprint.slice(0, 12)}...${fingerprint.slice(-8)}`;
+}
+
+function sourceRetrievedLabel(value: string | null): string | null {
+  if (!value) return null;
+  return new Intl.DateTimeFormat("de-DE", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 export default async function AnchorsPage({
   searchParams,
 }: {
@@ -274,6 +286,17 @@ export default async function AnchorsPage({
             )}
             {a.binding_force_note && (
               <p className="mt-1 text-xs italic text-neutral-500">{a.binding_force_note}</p>
+            )}
+            {(a.source_fingerprint || a.source_retrieved_at) && (
+              <p className="mt-2 text-xs text-neutral-500">
+                {a.source_fingerprint && (
+                  <span className="font-mono">Fingerprint: {shortFingerprint(a.source_fingerprint)}</span>
+                )}
+                {a.source_fingerprint && a.source_retrieved_at && <span> · </span>}
+                {sourceRetrievedLabel(a.source_retrieved_at) && (
+                  <span>Abruf: {sourceRetrievedLabel(a.source_retrieved_at)}</span>
+                )}
+              </p>
             )}
             {canCurate && a.source_status === "fetched_unverified" && a.source_fingerprint && (
               <form action={verifySource} className="mt-2">

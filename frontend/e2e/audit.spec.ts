@@ -59,6 +59,7 @@ function insertTestAnchor(): void {
   runDatabaseStep(
     `
 import sys
+from datetime import UTC, datetime
 from micar.models import Anchor, AnchorAuthority, AnchorLevel, SourceStatus, session_scope
 with session_scope() as session:
     session.add(Anchor(
@@ -67,8 +68,11 @@ with session_scope() as session:
         citation_canonical=sys.argv[1],
         url="https://www.eba.europa.eu/",
         version="browser-fixture",
+        body="Amtlicher Testquellentext für die Browserprüfung. " * 20,
         binding_force_note="Level 3: Gemeinsame EBA/ESMA-Leitlinie.",
-        source_status=SourceStatus.SEED_UNVERIFIED.value,
+        source_fingerprint="abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+        source_retrieved_at=datetime(2026, 5, 28, 9, 0, tzinfo=UTC),
+        source_status=SourceStatus.FETCHED_UNVERIFIED.value,
     ))
 `,
     jointGuidelineCitation,
@@ -128,13 +132,15 @@ test("shows redacted audit events to an administrator", async ({ page }) => {
   await expect(table).not.toContainText(testEmail);
 });
 
-test("labels unverified joint EBA and ESMA sources in the anchor library", async ({ page }) => {
+test("labels fetched joint EBA and ESMA sources in the anchor library", async ({ page }) => {
   await signIn(page, testEmail);
   insertTestAnchor();
 
-  await page.goto("/anchors?authority=eba_esma&source_status=seed_unverified");
+  await page.goto("/anchors?authority=eba_esma&source_status=fetched_unverified");
 
   const item = page.getByRole("listitem").filter({ hasText: jointGuidelineCitation });
   await expect(item).toContainText("EBA / ESMA · level 3");
-  await expect(item).toContainText("Seed, nicht geprüft");
+  await expect(item).toContainText("Text geladen, Prüfung ausstehend");
+  await expect(item).toContainText("Fingerprint: abcdef123456...34567890");
+  await expect(item).toContainText("Abruf:");
 });
