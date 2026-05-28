@@ -34,9 +34,12 @@ The codebase currently contains:
 - Pending-change propagation from amended official MiCAR fingerprints to
   affected rendered clauses.
 - Clause-level review with provenance display and approved DOCX package export.
+- Mandate readiness gates for intake, drafts, sources, lawyer review and export.
+- A supervised deterministic agent layer with persisted runs, steps, findings
+  and proposed actions.
 - An administrator-only view of redacted operational audit events.
-- Automated browser regression checks for malformed development identity
-  handling and role-gated audit visibility.
+- Automated browser regression checks for malformed development identity,
+  role-gated audit visibility, source review and a full CASP drafting flow.
 
 The nine Level 2 entries are required citations in the affected templates and
 are fetched from the official Publications Office source. The five linked EBA
@@ -63,6 +66,23 @@ Client confidentiality and source provenance are product requirements:
 9. Superseded template versions require regeneration before approval or export.
 10. An export package contains only latest, lawyer-approved clauses whose cited
    sources are still verified.
+11. Agents create findings and proposed actions only; they cannot verify
+    sources, approve clauses, mutate templates or create packages.
+
+## Agent Model
+
+The implemented agents are local and deterministic:
+
+1. Readiness Agent: calculates the mandate's next safe operational step.
+2. Citation Auditor Agent: checks anchors, source status and template freshness.
+3. Draft QA Agent: flags review markers, missing text, placeholders and missing citations.
+4. Source Monitor Agent: summarizes pending source changes and unverified loaded sources.
+5. Package Review Agent: prepares export-readiness findings and package proposals.
+6. Template Improvement Agent: flags catalogue gaps and template QA opportunities.
+
+The future LLM-backed form should use the same tables and review gates, with
+external processing, tracing and confidentiality controls documented before
+activation.
 
 ## Next Delivery Stages
 
@@ -72,8 +92,9 @@ Client confidentiality and source provenance are product requirements:
    adopted RTS, ITS and reviewed guideline requirements.
 3. Add further authority-specific automated monitoring only after stable
    official source endpoints and change-review responsibilities are defined.
-4. Add production authentication, deployment configuration and browser-level
-   coverage for complete drafting and package-review workflows before live
+4. Add optional LLM-backed agent reasoning only after prompt assets, tracing
+   redaction and external-processing approvals are locked.
+5. Add production authentication and deployment configuration before live
    mandate use.
 
 ## Verification Standard

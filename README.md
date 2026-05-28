@@ -70,6 +70,8 @@ The following controls are enforced in code:
 - Clauses rendered from a superseded template version must be regenerated before approval or export.
 - Only the latest lawyer-approved clauses with currently verified sources can
   enter an export package.
+- Supervised agents can create findings and proposed actions, but they do not
+  verify sources, approve clauses, mutate templates, or create packages.
 - Administrators can review redacted operational events in the audit protocol.
 
 The source workflow is:
@@ -120,6 +122,25 @@ rejecting a pending change marks it unavailable.
 The templates are drafting structures. Bracketed review instructions identify
 points requiring a lawyer's factual and legal completion before approval.
 
+## Agent Layer
+
+The app includes a supervised deterministic agent layer for mandate operations.
+Agents run from the mandate cockpit and persist an auditable `agent_run` with
+steps, findings and proposed actions.
+
+Implemented agents:
+
+- Readiness Agent: calculates intake, draft, source, review and export gates.
+- Citation Auditor Agent: checks rendered clauses against anchors, source status and template freshness.
+- Draft QA Agent: flags empty drafts, missing citations, review markers and technical placeholders.
+- Source Monitor Agent: summarizes source-change and source-verification queues.
+- Package Review Agent: prepares an export-readiness memo without creating the package.
+- Template Improvement Agent: flags catalogue gaps and review instructions that should become structured QA tasks.
+
+The current runtime is local and deterministic by design. External LLM-backed
+agent reasoning should remain an explicit, review-gated extension after
+confidentiality, processing and tracing controls have been documented.
+
 ## Commands
 
 ```bash
@@ -141,9 +162,9 @@ cd frontend && npx playwright install chromium
 
 ## Current Status
 
-- Implemented: authentication bridge, owner-scoped mandates, CASP, ART and EMT intake, 22 track templates, official MiCAR article refresh, official refresh for nine adopted Level 2 instruments used by live templates, official PDF refresh for five EBA and joint EBA/ESMA guidelines used by live templates, manual supplementary source ingestion, source-change review queue, redacted admin audit view, document review cockpit and approved DOCX package generation.
-- Implemented safety work: outbound-processing gate, reversible redaction, verified-source approval and export gate, official and supplementary source-change flagging, citation-failed approval block, audit payload minimisation, persisted template records and automated browser checks for identity and audit access.
-- Outstanding production work: curator verification and substantive legal review of the newly linked Level 2 instruments and Level 3 guidelines, additional authority-specific monitoring, production deployment hardening and broader browser coverage for full drafting workflows.
+- Implemented: authentication bridge, owner-scoped mandates, CASP, ART and EMT intake, 22 track templates, official MiCAR article refresh, official refresh for nine adopted Level 2 instruments used by live templates, official PDF refresh for five EBA and joint EBA/ESMA guidelines used by live templates, manual supplementary source ingestion, source-change review queue, redacted admin audit view, document review cockpit, supervised mandate agents and approved DOCX package generation.
+- Implemented safety work: outbound-processing gate, reversible redaction, verified-source approval and export gate, official and supplementary source-change flagging, citation-failed approval block, audit payload minimisation, persisted template records and automated browser checks for identity, audit access, source review and full CASP drafting flow.
+- Outstanding production work: curator verification and substantive legal review of the newly linked Level 2 instruments and Level 3 guidelines, additional authority-specific monitoring, production deployment hardening and optional LLM-backed agent reasoning under explicit confidentiality and tracing controls.
 
 No client matter should be processed externally until the required professional,
 confidentiality and processing approvals have been documented.

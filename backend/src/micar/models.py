@@ -262,8 +262,66 @@ class Artifact(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
 
+class AgentRun(Base):
+    __tablename__ = "agent_runs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    mandate_id: Mapped[int | None] = mapped_column(ForeignKey("mandates.id"), nullable=True, index=True)
+    actor_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    agent_key: Mapped[str] = mapped_column(String(64), index=True)
+    status: Mapped[str] = mapped_column(String(32), default="completed", index=True)
+    trigger: Mapped[str] = mapped_column(String(32), default="manual")
+    input_snapshot: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    result_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class AgentStep(Base):
+    __tablename__ = "agent_steps"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    step_key: Mapped[str] = mapped_column(String(96))
+    status: Mapped[str] = mapped_column(String(32), default="completed")
+    input_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    output: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class AgentFinding(Base):
+    __tablename__ = "agent_findings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    mandate_id: Mapped[int | None] = mapped_column(ForeignKey("mandates.id"), nullable=True, index=True)
+    severity: Mapped[str] = mapped_column(String(16), index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    body: Mapped[str] = mapped_column(Text)
+    evidence: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="open", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+
+class AgentAction(Base):
+    __tablename__ = "agent_actions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    run_id: Mapped[int] = mapped_column(ForeignKey("agent_runs.id"), index=True)
+    mandate_id: Mapped[int | None] = mapped_column(ForeignKey("mandates.id"), nullable=True, index=True)
+    action_type: Mapped[str] = mapped_column(String(64), index=True)
+    status: Mapped[str] = mapped_column(String(32), default="proposed", index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    payload: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    decided_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
 Index("ix_anchors_effective", Anchor.effective_from, Anchor.effective_to)
 Index("ix_anchor_changes_status_detected", AnchorChange.triage_status, AnchorChange.detected_at)
+Index("ix_agent_runs_mandate_created", AgentRun.mandate_id, AgentRun.created_at)
+Index("ix_agent_findings_mandate_status", AgentFinding.mandate_id, AgentFinding.status)
 
 
 # ---------------------------------------------------------------------------

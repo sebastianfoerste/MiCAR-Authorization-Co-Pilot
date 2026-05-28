@@ -48,11 +48,54 @@ type ArtifactOut = {
   created_at: string;
 };
 
+type ReadinessGateOut = {
+  key: string;
+  label: string;
+  status: "pass" | "pending" | "blocked";
+  summary: string;
+  blockers: string[];
+};
+
+type MandateReadinessOut = {
+  mandate_id: number;
+  state: string;
+  next_action: string;
+  can_generate: boolean;
+  can_enter_review: boolean;
+  can_package: boolean;
+  gates: ReadinessGateOut[];
+};
+
+type AgentRunOut = {
+  id: number;
+  mandate_id: number | null;
+  agent_key: string;
+  status: string;
+  trigger: string;
+  result_summary: string | null;
+  created_at: string;
+  completed_at: string | null;
+  finding_count: number;
+  action_count: number;
+};
+
 function reviewStatusLabel(status: string): string {
   if (status === "approved") return "freigegeben";
   if (status === "rejected") return "zur Überarbeitung";
   if (status === "citation_failed") return "Zitationsfehler";
   return "Prüfung offen";
+}
+
+function readinessStatusLabel(status: string): string {
+  if (status === "pass") return "ok";
+  if (status === "blocked") return "blockiert";
+  return "ausstehend";
+}
+
+function readinessStatusClasses(status: string): string {
+  if (status === "pass") return "bg-green-50 text-green-800";
+  if (status === "blocked") return "bg-red-50 text-red-800";
+  return "bg-amber-50 text-amber-900";
 }
 
 function sourceStatusLabel(status: string | null): string {
@@ -70,14 +113,18 @@ export default async function MandatePage({
   const { id } = await params;
   let mandate: MandateOut | null = null;
   let intake: IntakeListOut | null = null;
+  let readiness: MandateReadinessOut | null = null;
   let reviewUses: ReviewUse[] = [];
   let artifacts: ArtifactOut[] = [];
+  let agentRuns: AgentRunOut[] = [];
   let error: string | null = null;
   try {
     mandate = await backendJSON<MandateOut>(`/mandates/${id}`);
     intake = await backendJSON<IntakeListOut>(`/mandates/${id}/intake`);
+    readiness = await backendJSON<MandateReadinessOut>(`/mandates/${id}/readiness`);
     reviewUses = await backendJSON<ReviewUse[]>(`/mandates/${id}/renders`);
     artifacts = await backendJSON<ArtifactOut[]>(`/mandates/${id}/artifacts`);
+    agentRuns = await backendJSON<AgentRunOut[]>(`/mandates/${id}/agent-runs?limit=5`);
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
@@ -112,6 +159,15 @@ export default async function MandatePage({
   async function packageApprovedDrafts() {
     "use server";
     await backendFetch(`/mandates/${id}/package`, { method: "POST" });
+    revalidatePath(`/mandates/${id}`);
+  }
+
+  async function runAgents(formData: FormData) {
+    "use server";
+    await backendFetch(`/mandates/${id}/agent-runs`, {
+      method: "POST",
+      body: JSON.stringify({ agent_key: String(formData.get("agent_key") ?? "all") }),
+    });
     revalidatePath(`/mandates/${id}`);
   }
 
@@ -203,6 +259,85 @@ export default async function MandatePage({
             )}
           </div>
         </div>
+      </section>
+
+      {readiness && (
+        <section className="mt-6 rounded border border-neutral-200 bg-white p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-sm font-semibold">Readiness Gates</h2>
+              <p className="mt-1 text-xs text-neutral-600">
+                Nächster sinnvoller Schritt: <span className="font-medium">{readiness.next_action}</span>
+              </p>
+            </div>
+            <div className="flex gap-2 text-xs">
+              <span className={readiness.can_generate ? "text-green-700" : "text-neutral-500"}>
+                Generate {readiness.can_generate ? "ok" : "gesperrt"}
+              </span>
+              <span className={readiness.can_package ? "text-green-700" : "text-neutral-500"}>
+                Export {readiness.can_package ? "ok" : "gesperrt"}
+              </span>
+            </div>
+          </div>
+          <ul className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-5">
+            {readiness.gates.map((gate) => (
+              <li key={gate.key} className="rounded border border-neutral-200 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium">{gate.label}</span>
+                  <span className={`rounded px-2 py-0.5 text-[11px] ${readinessStatusClasses(gate.status)}`}>
+                    {readinessStatusLabel(gate.status)}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-neutral-600">{gate.summary}</p>
+                {gate.blockers.length > 0 && (
+                  <p className="mt-2 text-[11px] text-red-800">
+                    {gate.blockers.length} Blocker, erster: {gate.blockers[0]}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className="mt-6 rounded border border-neutral-200 bg-neutral-50 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold">Agent Cockpit</h2>
+            <p className="mt-1 text-xs text-neutral-600">
+              Supervised agents schreiben Findings und Vorschläge. Sie ändern keine Quellen,
+              Freigaben oder Exportpakete ohne Review.
+            </p>
+          </div>
+          <form action={runAgents}>
+            <input type="hidden" name="agent_key" value="all" />
+            <button type="submit" className="rounded bg-neutral-900 px-3 py-2 text-xs text-white">
+              Agentenlauf starten
+            </button>
+          </form>
+        </div>
+        {agentRuns.length > 0 ? (
+          <ul className="mt-4 divide-y divide-neutral-200 rounded border border-neutral-200 bg-white px-3">
+            {agentRuns.map((run) => (
+              <li key={run.id} className="py-3 text-xs">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-medium">
+                    {run.agent_key} · {run.status}
+                  </span>
+                  <span className="text-neutral-500">{run.created_at.slice(0, 16).replace("T", " ")}</span>
+                </div>
+                <p className="mt-1 text-neutral-600">{run.result_summary ?? "Keine Zusammenfassung."}</p>
+                <p className="mt-1 text-neutral-500">
+                  Findings: {run.finding_count} · Vorschläge: {run.action_count}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-4 rounded border border-dashed border-neutral-300 bg-white p-4 text-xs text-neutral-500">
+            Noch kein Agentenlauf für dieses Mandat.
+          </p>
+        )}
       </section>
 
       {intake?.blocking && intake.blocking.length > 0 && (
