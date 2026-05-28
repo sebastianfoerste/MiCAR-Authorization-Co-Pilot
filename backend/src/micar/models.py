@@ -185,6 +185,7 @@ class Anchor(Base):
     source_retrieved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     reviewed_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     __table_args__ = (UniqueConstraint("citation_canonical", "version", name="uq_anchor_citation_version"),)

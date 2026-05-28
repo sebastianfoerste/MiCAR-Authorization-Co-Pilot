@@ -44,6 +44,7 @@ class AnchorOut(BaseModel):
     source_status: str
     source_retrieved_at: datetime | None
     reviewed_at: datetime | None
+    review_note: str | None
 
 
 class AnchorListOut(BaseModel):
@@ -114,6 +115,7 @@ def _to_out(a: Anchor) -> AnchorOut:
         source_status=a.source_status,
         source_retrieved_at=a.source_retrieved_at,
         reviewed_at=a.reviewed_at,
+        review_note=a.review_note,
     )
 
 
@@ -218,6 +220,7 @@ def ingest_public_source_text(
             row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
             row.reviewed_at = None
             row.reviewed_by = None
+            row.review_note = None
             change = record_anchor_change(
                 session,
                 anchor=row,
@@ -228,6 +231,7 @@ def ingest_public_source_text(
             change_id = change.id
         elif row.source_status != SourceStatus.VERIFIED.value:
             row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
+            row.review_note = None
 
         write_audit(
             session,
@@ -261,6 +265,7 @@ def verify_anchor(
         row.source_status = SourceStatus.VERIFIED.value
         row.reviewed_at = datetime.now(UTC)
         row.reviewed_by = user.id
+        row.review_note = body.review_note
         pending_changes = (
             session.execute(
                 select(AnchorChange)
@@ -308,6 +313,7 @@ def triage_anchor_change(
                     anchor.source_status = SourceStatus.REJECTED.value
                     anchor.reviewed_at = change.approved_at
                     anchor.reviewed_by = user.id
+                    anchor.review_note = None
         write_audit(
             session,
             kind="anchor.change.rejected",

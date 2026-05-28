@@ -1,4 +1,5 @@
 """Confirm the ORM metadata is well-formed without needing a live Postgres."""
+
 from __future__ import annotations
 
 from micar.models import Base
@@ -24,13 +25,10 @@ def test_unique_constraints() -> None:
     assert any(c.name == "uq_users_email" for c in tables["users"].constraints) or any(
         col.unique for col in tables["users"].columns if col.name == "email"
     )
-    assert any(
-        c.name == "uq_anchor_citation_version" for c in tables["anchors"].constraints
-    )
-    assert any(
-        c.name == "uq_template_track_clause_ver" for c in tables["templates"].constraints
-    )
-    assert any(
-        c.name == "uq_intake_section_mandate_key"
-        for c in tables["intake_sections"].constraints
-    )
+    assert any(c.name == "uq_anchor_citation_version" for c in tables["anchors"].constraints)
+    assert any(c.name == "uq_template_track_clause_ver" for c in tables["templates"].constraints)
+    assert any(c.name == "uq_intake_section_mandate_key" for c in tables["intake_sections"].constraints)
+
+
+def test_anchor_review_note_column_registered() -> None:
+    assert "review_note" in Base.metadata.tables["anchors"].columns

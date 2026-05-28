@@ -18,6 +18,7 @@ type AnchorOut = {
   source_status: string;
   source_retrieved_at: string | null;
   reviewed_at: string | null;
+  review_note: string | null;
 };
 
 type AnchorListOut = { items: AnchorOut[]; total: number };
@@ -301,6 +302,9 @@ export default async function AnchorsPage({
             )}
             {canCurate && a.source_status === "fetched_unverified" && a.source_fingerprint && (
               <form action={verifySource} className="mt-3 space-y-2 rounded border border-green-200 bg-green-50 p-3">
+                <p className="text-xs text-green-900">
+                  Notiz dokumentiert nur die Quellenprüfung. Keine Mandats-, Client- oder Kandidatendaten eintragen.
+                </p>
                 <input type="hidden" name="anchor_id" value={a.id} />
                 <input type="hidden" name="fingerprint" value={a.source_fingerprint} />
                 <label className="block text-xs font-medium text-green-950">
@@ -321,6 +325,11 @@ export default async function AnchorsPage({
                   Mit Review-Notiz freigeben
                 </button>
               </form>
+            )}
+            {canCurate && a.review_note && (
+              <p className="mt-2 rounded bg-neutral-50 p-2 text-xs text-neutral-600">
+                Review-Notiz: {a.review_note}
+              </p>
             )}
             {canCurate && !a.authority.startsWith("eu_") && (
               <details className="mt-2 text-xs">

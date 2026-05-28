@@ -153,6 +153,13 @@ def build_package(session: Session, *, mandate: Mandate) -> PackageBuildResult:
                     "anchor_id": str(c.get("anchor_id") or ""),
                     "url": anchor.url if anchor else "",
                     "effective_from": str(anchor.effective_from) if anchor else "",
+                    "source_status": anchor.source_status if anchor else "",
+                    "source_fingerprint": anchor.source_fingerprint if anchor else "",
+                    "source_retrieved_at": anchor.source_retrieved_at.isoformat()
+                    if anchor and anchor.source_retrieved_at
+                    else "",
+                    "reviewed_at": anchor.reviewed_at.isoformat() if anchor and anchor.reviewed_at else "",
+                    "review_note": anchor.review_note if anchor else "",
                 }
             )
 
@@ -184,7 +191,18 @@ def build_package(session: Session, *, mandate: Mandate) -> PackageBuildResult:
     csv_buf = io.StringIO()
     writer = csv.DictWriter(
         csv_buf,
-        fieldnames=["template_use_id", "citation", "anchor_id", "url", "effective_from"],
+        fieldnames=[
+            "template_use_id",
+            "citation",
+            "anchor_id",
+            "url",
+            "effective_from",
+            "source_status",
+            "source_fingerprint",
+            "source_retrieved_at",
+            "reviewed_at",
+            "review_note",
+        ],
     )
     writer.writeheader()
     writer.writerows(citation_rows)

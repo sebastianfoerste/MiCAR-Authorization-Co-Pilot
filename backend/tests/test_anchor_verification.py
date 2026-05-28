@@ -3,7 +3,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from micar.api.anchors import AnchorVerifyIn
+from micar.api.anchors import AnchorVerifyIn, _to_out
+from micar.models import Anchor
 
 
 def test_anchor_verification_requires_review_note() -> None:
@@ -18,3 +19,17 @@ def test_anchor_verification_normalizes_review_note() -> None:
     )
 
     assert body.review_note == "Amtliche Fundstelle, Fassung und Fingerprint geprüft."
+
+
+def test_anchor_output_includes_review_note() -> None:
+    anchor = Anchor(
+        id=1,
+        level="level_3",
+        authority="eba",
+        citation_canonical="EBA source",
+        version="reviewed",
+        source_status="verified",
+        review_note="Amtliche Fundstelle und Fingerprint geprüft.",
+    )
+
+    assert _to_out(anchor).review_note == "Amtliche Fundstelle und Fingerprint geprüft."

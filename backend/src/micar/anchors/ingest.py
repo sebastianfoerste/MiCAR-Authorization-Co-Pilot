@@ -261,6 +261,7 @@ def ingest_official_micar_articles(
                 row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
                 row.reviewed_at = None
                 row.reviewed_by = None
+                row.review_note = None
             if prior_fingerprint and prior_fingerprint != article.fingerprint:
                 record_anchor_change(
                     session,
@@ -318,6 +319,7 @@ def ingest_official_level2_documents(
                 row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
                 row.reviewed_at = None
                 row.reviewed_by = None
+                row.review_note = None
             if prior_fingerprint and prior_fingerprint != document.fingerprint:
                 record_anchor_change(
                     session,
@@ -375,6 +377,7 @@ def ingest_official_level3_guideline_documents(
                 row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
                 row.reviewed_at = None
                 row.reviewed_by = None
+                row.review_note = None
             if prior_fingerprint and prior_fingerprint != document.fingerprint:
                 record_anchor_change(
                     session,
