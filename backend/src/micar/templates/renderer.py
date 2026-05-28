@@ -15,6 +15,7 @@ The renderer never decides "close enough" — it succeeds iff every anchor
 exists, is in effect at the mandate's reference date, and the LLM produced a
 non-empty prose body.
 """
+
 from __future__ import annotations
 
 import uuid
@@ -62,32 +63,22 @@ class RenderOutcome:
         )
 
 
-def _fetch_template_anchors(
-    session: Session, citations: list[str]
-) -> dict[str, Anchor]:
+def _fetch_template_anchors(session: Session, citations: list[str]) -> dict[str, Anchor]:
     if not citations:
         return {}
     normalized = [normalize(c) for c in citations]
-    rows = (
-        session.execute(select(Anchor).where(Anchor.citation_canonical.in_(normalized)))
-        .scalars()
-        .all()
-    )
+    rows = session.execute(select(Anchor).where(Anchor.citation_canonical.in_(normalized))).scalars().all()
     return {a.citation_canonical: a for a in rows}
 
 
-def _facts_for_template(
-    session: Session, mandate: Mandate, template: TemplateDef
-) -> dict[str, Any]:
+def _facts_for_template(session: Session, mandate: Mandate, template: TemplateDef) -> dict[str, Any]:
     """Merge required intake sections into one fact dict, validating against
     their Pydantic models. Any failure surfaces as a structured error in the
     RenderOutcome.
     """
     facts: dict[str, Any] = {"_mandate": {"id": mandate.id, "name": mandate.name, "track": mandate.track}}
     section_rows = (
-        session.execute(select(IntakeSection).where(IntakeSection.mandate_id == mandate.id))
-        .scalars()
-        .all()
+        session.execute(select(IntakeSection).where(IntakeSection.mandate_id == mandate.id)).scalars().all()
     )
     by_key = {r.section_key: r for r in section_rows}
     for key in template.required_sections:
@@ -130,15 +121,9 @@ def _upsert_template_row(session: Session, template: TemplateDef) -> Template:
     return row
 
 
-def _omitted_required_citations(
-    template: TemplateDef, rendered_citations: list[str]
-) -> list[str]:
+def _omitted_required_citations(template: TemplateDef, rendered_citations: list[str]) -> list[str]:
     normalized_rendered = {normalize(citation) for citation in rendered_citations}
-    return [
-        citation
-        for citation in template.anchor_refs
-        if normalize(citation) not in normalized_rendered
-    ]
+    return [citation for citation in template.anchor_refs if normalize(citation) not in normalized_rendered]
 
 
 def _blocked_outcome(
@@ -188,10 +173,9 @@ def render_template(
     )
     template_anchor_problems: list[str] = []
     if not template_anchor_pre.ok:
-        template_anchor_problems = (
-            [f"missing: {m}" for m in template_anchor_pre.missing]
-            + [f"out_of_effect: {o}" for o in template_anchor_pre.out_of_effect]
-        )
+        template_anchor_problems = [f"missing: {m}" for m in template_anchor_pre.missing] + [
+            f"out_of_effect: {o}" for o in template_anchor_pre.out_of_effect
+        ]
         return _blocked_outcome(
             session,
             mandate=mandate,
@@ -245,9 +229,7 @@ def render_template(
     redacted: RedactedFacts | None = None
     synthesis_facts = facts
     redaction_mode = "local_stub"
-    if external and (
-        mandate.redact_client_identifiers or not settings.allow_unredacted_external_client_data
-    ):
+    if external and (mandate.redact_client_identifiers or not settings.allow_unredacted_external_client_data):
         redacted = redact_facts(facts)
         synthesis_facts = redacted.facts
         redaction_mode = "redacted"
@@ -270,9 +252,7 @@ def render_template(
         rendered.prose = redacted.restore(rendered.prose)
 
     # 5. Verify citations the LLM actually produced.
-    final_check = verify_against_set(
-        citations=rendered.citations, anchor_lookup=anchor_lookup, ref_date=ref
-    )
+    final_check = verify_against_set(citations=rendered.citations, anchor_lookup=anchor_lookup, ref_date=ref)
     omitted_required_citations = _omitted_required_citations(template, rendered.citations)
     template_anchor_problems.extend(
         f"omitted_required_citation: {citation}" for citation in omitted_required_citations

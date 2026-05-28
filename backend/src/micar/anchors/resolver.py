@@ -9,6 +9,7 @@ hard-fails the template render. We do not fuzzy-match to "probably this
 anchor" because the wrong anchor is worse than no anchor in a regulatory
 filing.
 """
+
 from __future__ import annotations
 
 import re
@@ -55,7 +56,5 @@ def resolve_many(session: Session, citations: Iterable[str]) -> dict[str, Anchor
     if not citations:
         return {}
     stmt = select(Anchor).where(Anchor.citation_canonical.in_(citations))
-    by_citation: dict[str, Anchor] = {
-        a.citation_canonical: a for a in session.execute(stmt).scalars().all()
-    }
+    by_citation: dict[str, Anchor] = {a.citation_canonical: a for a in session.execute(stmt).scalars().all()}
     return {c: by_citation.get(c) for c in citations}

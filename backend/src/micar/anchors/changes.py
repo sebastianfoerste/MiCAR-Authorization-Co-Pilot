@@ -1,4 +1,5 @@
 """Shared source-change recording for anchors and affected rendered clauses."""
+
 from __future__ import annotations
 
 from sqlalchemy import select
@@ -30,8 +31,7 @@ def record_anchor_change(
     for use in uses:
         citations = use.citations or []
         if any(
-            isinstance(citation, dict) and citation.get("anchor_id") == anchor.id
-            for citation in citations
+            isinstance(citation, dict) and citation.get("anchor_id") == anchor.id for citation in citations
         ):
             use.flagged_by_change_id = change.id
     return change

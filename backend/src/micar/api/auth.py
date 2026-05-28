@@ -11,6 +11,7 @@ sends it as `Authorization: Bearer <token>` on every API call. Claims:
 On first sight of a valid token whose email is in `USER_EMAIL_ALLOWLIST`,
 we create the User row. Subsequent calls update `last_login_at`.
 """
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -72,9 +73,7 @@ def _provision_or_touch(session: Session, *, email: str, name: str | None) -> Us
             detail="user allowlist is not configured",
         )
     if allowlist and email_norm not in allowlist:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="email not allowlisted"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="email not allowlisted")
 
     now = datetime.now(UTC)
     user = session.execute(select(User).where(User.email == email_norm)).scalar_one_or_none()
@@ -91,9 +90,7 @@ def _provision_or_touch(session: Session, *, email: str, name: str | None) -> Us
             .returning(User.id)
         ).scalar_one_or_none()
         if new_id is None:
-            user = session.execute(
-                select(User).where(User.email == email_norm)
-            ).scalar_one()
+            user = session.execute(select(User).where(User.email == email_norm)).scalar_one()
         else:
             user = session.get(User, new_id)
             if user is None:

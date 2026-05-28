@@ -9,6 +9,7 @@ citation verifier works in-process. We exercise the full flow:
 The full render_template() call needs a real Session because it persists a
 TemplateUse. We isolate the *logic* by directly composing the pieces.
 """
+
 from __future__ import annotations
 
 from datetime import date
@@ -75,8 +76,7 @@ def test_governance_renders_and_passes_citation_check() -> None:
             template_anchor_refs=template.anchor_refs,
             facts=facts,
             anchors_for_prompt=[
-                {"citation": c, "body_or_title": "", "binding_force_note": ""}
-                for c in template.anchor_refs
+                {"citation": c, "body_or_title": "", "binding_force_note": ""} for c in template.anchor_refs
             ],
         )
     )

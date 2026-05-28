@@ -1,4 +1,5 @@
 """Redaction for facts sent to an external synthesis provider."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

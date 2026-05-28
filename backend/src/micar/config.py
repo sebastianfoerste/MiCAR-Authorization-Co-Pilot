@@ -1,4 +1,5 @@
 """Environment-driven settings. Mirrors recruiter/config.py."""
+
 from __future__ import annotations
 
 from functools import lru_cache

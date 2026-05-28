@@ -13,6 +13,7 @@ The API stays in-memory friendly: pass an iterable of
 Anchor rows alongside the citations. The renderer module fetches the anchor
 universe once per render and feeds it in.
 """
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -73,9 +74,7 @@ def verify_citations(
             continue
         resolved_ids[cit] = anchor.id
     ok = not missing and not out_of_effect
-    return CitationCheckResult(
-        ok=ok, missing=missing, out_of_effect=out_of_effect, resolved=resolved_ids
-    )
+    return CitationCheckResult(ok=ok, missing=missing, out_of_effect=out_of_effect, resolved=resolved_ids)
 
 
 def verify_against_set(
@@ -103,6 +102,4 @@ def verify_against_set(
             continue
         resolved_ids[cit] = anchor.id
     ok = not missing and not out_of_effect
-    return CitationCheckResult(
-        ok=ok, missing=missing, out_of_effect=out_of_effect, resolved=resolved_ids
-    )
+    return CitationCheckResult(ok=ok, missing=missing, out_of_effect=out_of_effect, resolved=resolved_ids)

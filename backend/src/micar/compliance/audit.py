@@ -3,6 +3,7 @@
 Single-purpose: append a row to `audit_events`. Callers redact before passing
 the payload — this module does not inspect content beyond writing it.
 """
+
 from __future__ import annotations
 
 from typing import Any

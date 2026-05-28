@@ -4,6 +4,7 @@ Locks the contract: the backend accepts HS256 tokens signed with
 JWT_SHARED_SECRET whose `iss` matches and `aud` matches, and rejects everything
 else with 401.
 """
+
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta

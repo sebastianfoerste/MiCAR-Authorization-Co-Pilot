@@ -1,4 +1,5 @@
 """FastAPI ASGI application."""
+
 from __future__ import annotations
 
 import structlog

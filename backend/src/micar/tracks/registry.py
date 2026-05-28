@@ -1,4 +1,5 @@
 """Track registry — single lookup point."""
+
 from __future__ import annotations
 
 from micar.tracks.art import ARTTrack

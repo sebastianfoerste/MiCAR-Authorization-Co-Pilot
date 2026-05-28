@@ -1,4 +1,5 @@
 """Track protocol — the abstraction shared by CASP, EMT, ART."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -20,5 +21,4 @@ class Track(Protocol):
     label_de: str
     required_section_keys: tuple[str, ...]
 
-    def templates(self) -> Iterable[TemplateRef]:
-        ...
+    def templates(self) -> Iterable[TemplateRef]: ...

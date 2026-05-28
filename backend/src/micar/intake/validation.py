@@ -10,6 +10,7 @@ Two questions this module answers:
     All required sections present, each validated. Errors list names the
     missing or invalid sections.
 """
+
 from __future__ import annotations
 
 from typing import Any

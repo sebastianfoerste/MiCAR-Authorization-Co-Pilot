@@ -2,6 +2,7 @@
 number of Postgres-only column types (JSONB, ARRAY) are avoided in fixtures by
 using direct SQLAlchemy session helpers rather than Alembic migrations.
 """
+
 from __future__ import annotations
 
 import os

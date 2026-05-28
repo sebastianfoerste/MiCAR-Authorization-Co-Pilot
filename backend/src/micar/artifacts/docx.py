@@ -5,6 +5,7 @@ that strings the rendered clauses together with a cover page and a table of
 contents placeholder. The package step is intentionally simple; Word users
 update the ToC with F9 after opening.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -66,17 +67,13 @@ def render_package_docx(
 
     meta = doc.add_paragraph()
     meta.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-    meta.add_run(
-        f"Version {version} · erzeugt {datetime.now(UTC).strftime('%Y-%m-%d')}"
-    ).font.size = Pt(10)
+    meta.add_run(f"Version {version} · erzeugt {datetime.now(UTC).strftime('%Y-%m-%d')}").font.size = Pt(10)
 
     doc.add_page_break()
 
     # ToC placeholder. Word fills this on F9.
     doc.add_heading("Inhaltsverzeichnis", level=1)
-    doc.add_paragraph(
-        "Bitte in Word: Verweise > Inhaltsverzeichnis aktualisieren (F9)."
-    )
+    doc.add_paragraph("Bitte in Word: Verweise > Inhaltsverzeichnis aktualisieren (F9).")
     doc.add_page_break()
 
     # Clauses

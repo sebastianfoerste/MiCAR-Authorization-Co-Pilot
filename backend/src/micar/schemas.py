@@ -3,6 +3,7 @@
 Domain models live in `models.py` (SQLAlchemy). This file contains shared
 wire formats used by authentication and mandate routes.
 """
+
 from __future__ import annotations
 
 from datetime import date, datetime

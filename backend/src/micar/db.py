@@ -1,4 +1,5 @@
 """Re-exports from models for ergonomic imports. The real definitions live in models.py."""
+
 from __future__ import annotations
 
 from micar.models import (

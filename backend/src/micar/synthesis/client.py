@@ -16,6 +16,7 @@ flows through.
 Redaction is prepared by the renderer before external processing and restored
 locally after receipt.
 """
+
 from __future__ import annotations
 
 import logging
@@ -107,10 +108,7 @@ def _render_stub(payload: SynthesisInput) -> RenderedClause:
         "Anchors aus dem Template wurden 1:1 als Zitate übernommen.",
     ]
     if not body.strip():
-        body = (
-            f"## {payload.template_title}\n\n"
-            f"[Lawyer-Author erforderlich: Skeleton ist leer.]"
-        )
+        body = f"## {payload.template_title}\n\n[Lawyer-Author erforderlich: Skeleton ist leer.]"
 
     return RenderedClause(
         prose=body,
@@ -126,9 +124,7 @@ def _render_real(payload: SynthesisInput) -> RenderedClause:
     from anthropic import Anthropic
 
     settings = get_settings()
-    client = instructor.from_anthropic(
-        Anthropic(api_key=settings.anthropic_api_key.get_secret_value())
-    )
+    client = instructor.from_anthropic(Anthropic(api_key=settings.anthropic_api_key.get_secret_value()))
 
     user_payload = _build_user_message(payload)
     log.info(
@@ -171,17 +167,11 @@ def _build_user_message(payload: SynthesisInput) -> str:
 
 def synthesize(payload: SynthesisInput) -> RenderedClause:
     settings = get_settings()
-    if (
-        not settings.anthropic_api_key.get_secret_value()
-        or not settings.external_llm_processing_enabled
-    ):
+    if not settings.anthropic_api_key.get_secret_value() or not settings.external_llm_processing_enabled:
         return _render_stub(payload)
     return _render_real(payload)
 
 
 def external_synthesis_enabled() -> bool:
     settings = get_settings()
-    return bool(
-        settings.anthropic_api_key.get_secret_value()
-        and settings.external_llm_processing_enabled
-    )
+    return bool(settings.anthropic_api_key.get_secret_value() and settings.external_llm_processing_enabled)

@@ -1,4 +1,5 @@
 """Administrator-only read access to the redacted operational audit trail."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -56,9 +57,7 @@ def list_audit_events(
             count_stmt = count_stmt.where(AuditEvent.mandate_id == mandate_id)
         rows = (
             session.execute(
-                stmt.order_by(AuditEvent.occurred_at.desc(), AuditEvent.id.desc())
-                .limit(limit)
-                .offset(offset)
+                stmt.order_by(AuditEvent.occurred_at.desc(), AuditEvent.id.desc()).limit(limit).offset(offset)
             )
             .scalars()
             .all()

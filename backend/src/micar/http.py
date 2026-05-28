@@ -1,4 +1,5 @@
 """Shared httpx client factory with tenacity retry. Mirrors recruiter/http.py."""
+
 from __future__ import annotations
 
 import httpx
@@ -7,9 +8,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 from micar.config import get_settings
 
 
-def build_client(
-    *, base_url: str | None = None, headers: dict[str, str] | None = None
-) -> httpx.Client:
+def build_client(*, base_url: str | None = None, headers: dict[str, str] | None = None) -> httpx.Client:
     settings = get_settings()
     return httpx.Client(
         base_url=base_url or "",

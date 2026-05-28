@@ -1,4 +1,5 @@
 """Mandate CRUD + state transitions."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -43,9 +44,7 @@ class TransitionIn(BaseModel):
 def _load_user_id(session: Session, email: str) -> int | None:
     from micar.models import User
 
-    return session.execute(
-        select(User.id).where(User.email == email.lower().strip())
-    ).scalar_one_or_none()
+    return session.execute(select(User.id).where(User.email == email.lower().strip())).scalar_one_or_none()
 
 
 @router.get("/tracks", response_model=list[TrackOut])
@@ -117,9 +116,7 @@ _ALLOWED_TRANSITIONS: dict[str, set[str]] = {
 
 
 @router.post("/{mandate_id}/transition", response_model=MandateOut)
-def transition(
-    mandate_id: int, body: TransitionIn, user: UserOut = Depends(get_current_user)
-) -> MandateOut:
+def transition(mandate_id: int, body: TransitionIn, user: UserOut = Depends(get_current_user)) -> MandateOut:
     with session_scope() as session:
         m = load_accessible_mandate_or_404(session, mandate_id, user)
         allowed = _ALLOWED_TRANSITIONS.get(m.state, set())
@@ -132,9 +129,7 @@ def transition(
         if body.to_state == MandateState.READY_TO_GENERATE.value:
             sections = {
                 s.section_key: s.answers
-                for s in session.execute(
-                    select(IntakeSection).where(IntakeSection.mandate_id == mandate_id)
-                )
+                for s in session.execute(select(IntakeSection).where(IntakeSection.mandate_id == mandate_id))
                 .scalars()
                 .all()
             }

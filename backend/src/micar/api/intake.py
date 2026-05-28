@@ -7,6 +7,7 @@ Endpoints:
   PUT  /mandates/{id}/intake/{key}         — upsert answers (validates inline)
   POST /mandates/{id}/intake/validate      — gate check across all required sections
 """
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -53,9 +54,7 @@ class IntakeListOut(BaseModel):
 
 def _load_sections_dict(session, mandate_id: int) -> dict[str, IntakeSection]:
     rows = (
-        session.execute(select(IntakeSection).where(IntakeSection.mandate_id == mandate_id))
-        .scalars()
-        .all()
+        session.execute(select(IntakeSection).where(IntakeSection.mandate_id == mandate_id)).scalars().all()
     )
     return {r.section_key: r for r in rows}
 
@@ -101,9 +100,7 @@ def section_schema(
 
 
 @router.get("/{section_key}", response_model=SectionOut)
-def get_section(
-    mandate_id: int, section_key: str, user: UserOut = Depends(get_current_user)
-) -> SectionOut:
+def get_section(mandate_id: int, section_key: str, user: UserOut = Depends(get_current_user)) -> SectionOut:
     with session_scope() as session:
         mandate = load_accessible_mandate_or_404(session, mandate_id, user)
         row = (

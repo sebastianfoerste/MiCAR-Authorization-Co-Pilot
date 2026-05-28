@@ -16,6 +16,7 @@ Coverage scope:
   - Title VI: market abuse (Art. 86-92)
   - Selected recitals as provisional seed pointers.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

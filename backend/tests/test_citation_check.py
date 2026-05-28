@@ -1,4 +1,5 @@
 """Citation-verifier tests — locks the hard-fail behaviour without a live DB."""
+
 from __future__ import annotations
 
 from datetime import date
