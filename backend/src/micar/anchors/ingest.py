@@ -16,6 +16,10 @@ Two operating modes:
       Fetches official German text for the adopted Level 2 instruments cited
       by the live CASP, ART and EMT templates.
 
+  uv run python -m micar.anchors.ingest eba-guidelines
+      Fetches official German PDF text for the EBA and joint EBA/ESMA
+      guidelines cited by live templates.
+
 The seed mode creates unverified structural pointers without an external
 network dependency. Official refresh modes perform live official-source loads.
 """
@@ -28,13 +32,15 @@ import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from io import BytesIO
 
 import httpx
 from bs4 import BeautifulSoup
+from pypdf import PdfReader
 from sqlalchemy import select
 
 from micar.anchors.changes import record_anchor_change
-from micar.anchors.seed_external import all_external
+from micar.anchors.seed_external import all_external, eba_micar_guideline_anchors
 from micar.anchors.seed_level2 import all_level2, official_level2_instruments
 from micar.anchors.seed_micar import SeedAnchor, all_micar, micar_articles
 from micar.compliance.audit import write_audit
@@ -176,6 +182,58 @@ def fetch_official_level2_documents() -> dict[str, OfficialDocument]:
     return documents
 
 
+def _guideline_expected_terms(seed: SeedAnchor) -> tuple[str, ...]:
+    if seed.authority.value == "eba_esma":
+        return ("EBA/GL/2024/09", "ESMA75-453128700-10")
+    return (seed.version,)
+
+
+def parse_official_guideline_pdf(
+    document: bytes, *, citation_canonical: str, expected_terms: tuple[str, ...], source_url: str
+) -> OfficialDocument:
+    """Extract full text from an official EBA-hosted guideline PDF."""
+    if not document.startswith(b"%PDF"):
+        raise ValueError("official guideline response was not a PDF")
+    reader = PdfReader(BytesIO(document))
+    pages: list[str] = []
+    for page in reader.pages:
+        page_text = page.extract_text() or ""
+        cleaned = "\n".join(line.strip() for line in page_text.splitlines() if line.strip())
+        if cleaned:
+            pages.append(cleaned)
+    body = "\n\n".join(pages)
+    missing = [term for term in expected_terms if term not in body]
+    if len(body) < 500 or missing:
+        raise ValueError(
+            f"official guideline source did not contain expected terms for {citation_canonical}: {missing}"
+        )
+    return OfficialDocument(
+        citation_canonical=citation_canonical,
+        body=body,
+        fingerprint=hashlib.sha256(body.encode("utf-8")).hexdigest(),
+        source_url=source_url,
+    )
+
+
+def fetch_official_level3_guideline_documents() -> dict[str, OfficialDocument]:
+    documents: dict[str, OfficialDocument] = {}
+    for seed in eba_micar_guideline_anchors():
+        response = httpx.get(
+            seed.url,
+            headers={"Accept": "application/pdf", "Accept-Language": "deu"},
+            follow_redirects=True,
+            timeout=60.0,
+        )
+        response.raise_for_status()
+        documents[seed.citation_canonical] = parse_official_guideline_pdf(
+            response.content,
+            citation_canonical=seed.citation_canonical,
+            expected_terms=_guideline_expected_terms(seed),
+            source_url=seed.url,
+        )
+    return documents
+
+
 def ingest_official_micar_articles(
     articles: dict[int, OfficialArticle] | None = None,
 ) -> dict[str, int]:
@@ -290,6 +348,63 @@ def ingest_official_level2_documents(
     }
 
 
+def ingest_official_level3_guideline_documents(
+    documents: dict[str, OfficialDocument] | None = None,
+) -> dict[str, int]:
+    official = documents or fetch_official_level3_guideline_documents()
+    inserted = 0
+    refreshed = 0
+    preserved_verified = 0
+    changes_detected = 0
+    now = datetime.now(UTC)
+    with session_scope() as session:
+        for seed in eba_micar_guideline_anchors():
+            row, created = _upsert(session, seed)
+            document = official[seed.citation_canonical]
+            prior_fingerprint = row.source_fingerprint
+            was_verified_unchanged = (
+                row.source_status == SourceStatus.VERIFIED.value and prior_fingerprint == document.fingerprint
+            )
+            row.body = document.body
+            row.url = document.source_url
+            row.source_fingerprint = document.fingerprint
+            row.source_retrieved_at = now
+            if was_verified_unchanged:
+                preserved_verified += 1
+            else:
+                row.source_status = SourceStatus.FETCHED_UNVERIFIED.value
+                row.reviewed_at = None
+                row.reviewed_by = None
+            if prior_fingerprint and prior_fingerprint != document.fingerprint:
+                record_anchor_change(
+                    session,
+                    anchor=row,
+                    prior_fingerprint=prior_fingerprint,
+                    source_url=row.url,
+                    summary="Official Level 3 guideline fingerprint changed; curator verification required.",
+                )
+                changes_detected += 1
+            inserted += int(created)
+            refreshed += 1
+        write_audit(
+            session,
+            kind="anchor.official.refresh",
+            payload={
+                "source": "official_level3_guidelines",
+                "inserted": inserted,
+                "refreshed": refreshed,
+                "preserved_verified": preserved_verified,
+                "changes_detected": changes_detected,
+            },
+        )
+    return {
+        "inserted": inserted,
+        "refreshed": refreshed,
+        "preserved_verified": preserved_verified,
+        "changes_detected": changes_detected,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="micar.anchors.ingest")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -297,6 +412,7 @@ def main(argv: list[str] | None = None) -> int:
     eurlex = sub.add_parser("eurlex", help="Refresh MiCAR article text from official CELEX source")
     eurlex.add_argument("--regulation", required=True)
     sub.add_parser("eurlex-level2", help="Refresh official Level 2 text cited by templates")
+    sub.add_parser("eba-guidelines", help="Refresh official EBA and joint EBA/ESMA guideline PDFs")
 
     args = parser.parse_args(argv)
     if args.cmd == "seed":
@@ -318,6 +434,15 @@ def main(argv: list[str] | None = None) -> int:
         result = ingest_official_level2_documents()
         print(
             "official Level 2 ingest: "
+            f"inserted={result['inserted']} refreshed={result['refreshed']} "
+            f"preserved_verified={result['preserved_verified']} "
+            f"changes_detected={result['changes_detected']}"
+        )
+        return 0
+    if args.cmd == "eba-guidelines":
+        result = ingest_official_level3_guideline_documents()
+        print(
+            "official Level 3 guideline ingest: "
             f"inserted={result['inserted']} refreshed={result['refreshed']} "
             f"preserved_verified={result['preserved_verified']} "
             f"changes_detected={result['changes_detected']}"

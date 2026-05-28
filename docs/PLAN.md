@@ -26,7 +26,8 @@ The codebase currently contains:
   including standalone EMT recovery and redemption plans.
 - Official discovery pointers for the EBA ART governance, recovery-plan and
   redemption-plan guidelines and the joint EBA/ESMA suitability guidelines
-  cited by live templates.
+  cited by live templates, with an official PDF refresh command for those four
+  guideline texts.
 - Manual public-source text ingestion for supplementary anchors, fingerprinted
   change triage and source verification.
 - Pending-change propagation from amended official MiCAR fingerprints to
@@ -37,12 +38,13 @@ The codebase currently contains:
   handling and role-gated audit visibility.
 
 The eight Level 2 entries are required citations in the affected templates and
-are fetched from the official Publications Office source. They remain
-unavailable for approval or external synthesis until a curator verifies the
-stored text and fingerprint. The four linked EBA and EBA/ESMA guideline
-entries, together with other ESMA, EBA and BaFin entries, remain discovery
-pointers until a curator loads and verifies public source text. This is
-therefore a drafting prototype across three MiCAR tracks.
+are fetched from the official Publications Office source. The four linked EBA
+and EBA/ESMA guideline entries are fetched from official EBA-hosted PDFs. All
+freshly loaded official text remains unavailable for approval or external
+synthesis until a curator verifies the stored text and fingerprint. Other ESMA,
+EBA and BaFin entries remain discovery pointers until a curator loads and
+verifies public source text. This is therefore a drafting prototype across
+three MiCAR tracks.
 
 ## Control Model
 
@@ -63,8 +65,8 @@ Client confidentiality and source provenance are product requirements:
 
 ## Next Delivery Stages
 
-1. Curator-review the fetched Level 2 source texts and load and verify the
-   linked EBA and EBA/ESMA guideline texts required by live templates.
+1. Curator-review the fetched Level 2 source texts and fetched EBA and EBA/ESMA
+   guideline texts required by live templates.
 2. Perform substantive legal review of each affected template against its
    adopted RTS, ITS and reviewed guideline requirements.
 3. Add conditional sources and intake logic for significant or

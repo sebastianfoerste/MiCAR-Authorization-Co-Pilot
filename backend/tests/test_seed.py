@@ -9,10 +9,11 @@ from micar.anchors import ingest
 from micar.anchors.ingest import (
     OfficialArticle,
     OfficialDocument,
+    parse_official_guideline_pdf,
     parse_official_level2_document,
     parse_official_micar_articles,
 )
-from micar.anchors.seed_external import all_external
+from micar.anchors.seed_external import all_external, eba_micar_guideline_anchors
 from micar.anchors.seed_level2 import all_level2
 from micar.anchors.seed_micar import all_micar
 from micar.models import Anchor, SourceStatus
@@ -119,6 +120,34 @@ def test_official_level2_parser_validates_document_and_fingerprints() -> None:
     assert len(result.fingerprint) == 64
 
 
+def test_official_guideline_pdf_parser_validates_terms_and_fingerprints(monkeypatch) -> None:
+    citation = "EBA, Leitlinien über Sanierungspläne nach MiCAR, EBA/GL/2024/07, final, 13.6.2024"
+
+    class FakePage:
+        def __init__(self, text: str) -> None:
+            self.text = text
+
+        def extract_text(self) -> str:
+            return self.text
+
+    class FakeReader:
+        def __init__(self, _stream) -> None:
+            self.pages = [FakePage("EBA/GL/2024/07 " + "Leitlinien nach MiCAR. " * 35)]
+
+    monkeypatch.setattr(ingest, "PdfReader", FakeReader)
+
+    result = parse_official_guideline_pdf(
+        b"%PDF fixture",
+        citation_canonical=citation,
+        expected_terms=("EBA/GL/2024/07",),
+        source_url="https://www.eba.europa.eu/test.pdf",
+    )
+
+    assert result.citation_canonical.startswith("EBA, Leitlinien")
+    assert "EBA/GL/2024/07" in result.body
+    assert len(result.fingerprint) == 64
+
+
 def test_official_refresh_queues_a_changed_stored_fingerprint(monkeypatch) -> None:
     row = Anchor(
         id=68,
@@ -212,6 +241,60 @@ def test_level2_refresh_queues_a_changed_stored_fingerprint(monkeypatch) -> None
     assert recorded[0]["prior_fingerprint"] == "old"
     assert audit_payloads[0] == {
         "source": "official_micar_level2",
+        "inserted": 0,
+        "refreshed": 1,
+        "preserved_verified": 0,
+        "changes_detected": 1,
+    }
+
+
+def test_level3_guideline_refresh_queues_a_changed_stored_fingerprint(monkeypatch) -> None:
+    seed = eba_micar_guideline_anchors()[0]
+    row = Anchor(
+        id=201,
+        citation_canonical=seed.citation_canonical,
+        level="level_3",
+        authority="eba",
+        source_status=SourceStatus.VERIFIED.value,
+        source_fingerprint="old",
+    )
+    recorded: list[dict[str, object]] = []
+    audit_payloads: list[dict[str, object] | None] = []
+
+    @contextmanager
+    def fake_scope():
+        yield object()
+
+    monkeypatch.setattr(ingest, "session_scope", fake_scope)
+    monkeypatch.setattr(ingest, "eba_micar_guideline_anchors", lambda: [seed])
+    monkeypatch.setattr(ingest, "_upsert", lambda _session, _seed: (row, False))
+    monkeypatch.setattr(
+        ingest,
+        "record_anchor_change",
+        lambda _session, **kwargs: recorded.append(kwargs),
+    )
+    monkeypatch.setattr(
+        ingest,
+        "write_audit",
+        lambda _session, **kwargs: audit_payloads.append(kwargs.get("payload")),
+    )
+
+    result = ingest.ingest_official_level3_guideline_documents(
+        {
+            seed.citation_canonical: OfficialDocument(
+                citation_canonical=seed.citation_canonical,
+                body="changed guideline",
+                fingerprint="new",
+                source_url=seed.url,
+            )
+        }
+    )
+
+    assert result["changes_detected"] == 1
+    assert row.source_status == SourceStatus.FETCHED_UNVERIFIED.value
+    assert recorded[0]["prior_fingerprint"] == "old"
+    assert audit_payloads[0] == {
+        "source": "official_level3_guidelines",
         "inserted": 0,
         "refreshed": 1,
         "preserved_verified": 0,
