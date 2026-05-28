@@ -1,4 +1,5 @@
 """Anchor browser and curator-controlled source verification API."""
+
 from __future__ import annotations
 
 import hashlib
@@ -6,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import or_, select
 
 from micar.anchors.changes import record_anchor_change
@@ -54,6 +55,15 @@ class AnchorVerifyIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     expected_fingerprint: str = Field(min_length=64, max_length=128)
+    review_note: str = Field(min_length=20, max_length=2000)
+
+    @field_validator("review_note")
+    @classmethod
+    def normalize_review_note(cls, value: str) -> str:
+        cleaned = " ".join(value.split())
+        if len(cleaned) < 20:
+            raise ValueError("review_note must document the source review")
+        return cleaned
 
 
 class AnchorSourceTextIn(BaseModel):
@@ -137,9 +147,7 @@ def list_anchors(
             count_stmt = count_stmt.where(Anchor.source_status == source_status)
         if q:
             needle = f"%{q.strip()}%"
-            stmt = stmt.where(
-                or_(Anchor.citation_canonical.ilike(needle), Anchor.body.ilike(needle))
-            )
+            stmt = stmt.where(or_(Anchor.citation_canonical.ilike(needle), Anchor.body.ilike(needle)))
             count_stmt = count_stmt.where(
                 or_(Anchor.citation_canonical.ilike(needle), Anchor.body.ilike(needle))
             )
@@ -169,9 +177,7 @@ def list_anchor_changes(
 
 
 @router.get("/{anchor_id}", response_model=AnchorOut)
-def get_anchor(
-    anchor_id: int, _user: UserOut = Depends(get_current_user)
-) -> AnchorOut:
+def get_anchor(anchor_id: int, _user: UserOut = Depends(get_current_user)) -> AnchorOut:
     with session_scope() as session:
         row = session.get(Anchor, anchor_id)
         if not row:
@@ -272,7 +278,11 @@ def verify_anchor(
             session,
             kind="anchor.source.verified",
             actor_id=user.id,
-            payload={"anchor_id": row.id, "source_fingerprint": row.source_fingerprint},
+            payload={
+                "anchor_id": row.id,
+                "source_fingerprint": row.source_fingerprint,
+                "review_note": body.review_note,
+            },
         )
         return _to_out(row)
 

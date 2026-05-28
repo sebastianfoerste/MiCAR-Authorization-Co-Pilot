@@ -125,9 +125,10 @@ export default async function AnchorsPage({
     "use server";
     const anchorId = String(formData.get("anchor_id"));
     const fingerprint = String(formData.get("fingerprint"));
+    const reviewNote = String(formData.get("review_note") ?? "").trim();
     await backendFetch(`/anchors/${anchorId}/verify`, {
       method: "POST",
-      body: JSON.stringify({ expected_fingerprint: fingerprint }),
+      body: JSON.stringify({ expected_fingerprint: fingerprint, review_note: reviewNote }),
     });
     revalidatePath("/anchors");
   }
@@ -299,14 +300,25 @@ export default async function AnchorsPage({
               </p>
             )}
             {canCurate && a.source_status === "fetched_unverified" && a.source_fingerprint && (
-              <form action={verifySource} className="mt-2">
+              <form action={verifySource} className="mt-3 space-y-2 rounded border border-green-200 bg-green-50 p-3">
                 <input type="hidden" name="anchor_id" value={a.id} />
                 <input type="hidden" name="fingerprint" value={a.source_fingerprint} />
+                <label className="block text-xs font-medium text-green-950">
+                  Review-Notiz zur Quellenprüfung
+                  <textarea
+                    required
+                    minLength={20}
+                    name="review_note"
+                    rows={2}
+                    placeholder="Amtliche Fundstelle, Fassung und Fingerprint geprüft."
+                    className="mt-1 block w-full rounded border border-green-300 bg-white px-2 py-1 font-normal text-neutral-900"
+                  />
+                </label>
                 <button
                   type="submit"
                   className="rounded border border-green-700 px-2 py-1 text-xs text-green-800"
                 >
-                  Fingerprint prüfen und freigeben
+                  Mit Review-Notiz freigeben
                 </button>
               </form>
             )}

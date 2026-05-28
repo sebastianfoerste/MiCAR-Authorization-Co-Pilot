@@ -134,6 +134,7 @@ test("shows redacted audit events to an administrator", async ({ page }) => {
 
 test("labels fetched joint EBA and ESMA sources in the anchor library", async ({ page }) => {
   await signIn(page, testEmail);
+  promoteTestUser();
   insertTestAnchor();
 
   await page.goto("/anchors?authority=eba_esma&source_status=fetched_unverified");
@@ -143,4 +144,6 @@ test("labels fetched joint EBA and ESMA sources in the anchor library", async ({
   await expect(item).toContainText("Text geladen, Prüfung ausstehend");
   await expect(item).toContainText("Fingerprint: abcdef123456...34567890");
   await expect(item).toContainText("Abruf:");
+  await expect(item.getByLabel("Review-Notiz zur Quellenprüfung")).toBeVisible();
+  await expect(item.getByRole("button", { name: "Mit Review-Notiz freigeben" })).toBeVisible();
 });
