@@ -31,7 +31,7 @@ export default function SignInPage() {
             name="email"
             required
             className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
-            placeholder="vorname.nachname@gunnercooke.com"
+            placeholder="reviewer@example.com"
           />
           <button
             type="submit"

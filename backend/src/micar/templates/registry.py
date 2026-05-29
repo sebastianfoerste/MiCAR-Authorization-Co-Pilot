@@ -18,7 +18,7 @@ YAML shape:
     - governance
   prose_skeleton: |
     ## 1. Geschäftsleitung
-    [Hier füllt das gunnercooke-Team die fachliche Aussage entlang von
+    [Hier füllt das Review-Team die fachliche Aussage entlang von
      {{ anchor:Art. 68 Abs. 1 VO (EU) 2023/1114 (MiCAR) }} aus.]
   author_note: "Lawyer review required before any client-facing render."
 
