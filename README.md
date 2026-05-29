@@ -11,7 +11,8 @@ from an official source and approved in the anchor library before any external
 model synthesis can run.
 
 For scope, current limits and the next implementation stages, see
-[`docs/PLAN.md`](docs/PLAN.md).
+[`docs/PLAN.md`](docs/PLAN.md). For a reviewer-friendly launch runbook, see
+[`docs/launch-readiness.md`](docs/launch-readiness.md).
 
 ## Stack
 
