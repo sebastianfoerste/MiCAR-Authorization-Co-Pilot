@@ -4,15 +4,15 @@ services:
     container_name: micar-pg
     restart: unless-stopped
     environment:
-      POSTGRES_USER: micar
-      POSTGRES_PASSWORD: micar
-      POSTGRES_DB: micar
+      POSTGRES_USER: ${MICAR_POSTGRES_USER:-micar_local}
+      POSTGRES_PASSWORD: ${MICAR_POSTGRES_PASSWORD:-micar_local_password}
+      POSTGRES_DB: ${MICAR_POSTGRES_DB:-micar}
     ports:
       - "${MICAR_POSTGRES_PORT:-5433}:5432"
     volumes:
       - micar_pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U micar -d micar"]
+      test: ["CMD-SHELL", "pg_isready -U ${MICAR_POSTGRES_USER:-micar_local} -d ${MICAR_POSTGRES_DB:-micar}"]
       interval: 5s
       timeout: 3s
       retries: 10
