@@ -457,4 +457,25 @@ test("creates, renders, reviews, and packages a CASP mandate", async ({ page }) 
   await expect(page.getByText("supervisor · completed")).toBeVisible();
   await expect(page.getByText(/6 Agenten ausgeführt/)).toBeVisible();
   await expect(page.getByText(/Findings:/)).toBeVisible();
+
+  await page.getByRole("link", { name: "supervisor · completed" }).click();
+
+  await expect(page).toHaveURL(/\/mandates\/\d+\/agent-runs\/\d+$/);
+  await expect(page.getByRole("heading", { name: "Agentenlauf" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Findings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Vorschläge" })).toBeVisible();
+  const proposedAction = page.getByRole("listitem").filter({
+    has: page.getByRole("button", { name: "Vorschlag ablehnen" }),
+  }).first();
+  await expect(proposedAction.getByRole("button", { name: "Vorschlag ablehnen" })).toBeVisible();
+  const proposedActionTitle = await proposedAction.getByRole("heading").textContent();
+  expect(proposedActionTitle).toBeTruthy();
+  await proposedAction
+    .getByLabel("Review-Notiz zur Agentenentscheidung")
+    .fill("Entscheidung fachlich geprüft; Vorschlag bleibt bewusst review-gated.");
+  await proposedAction.getByRole("button", { name: "Vorschlag ablehnen" }).click();
+
+  const decidedAction = page.getByRole("listitem").filter({ hasText: proposedActionTitle! }).first();
+  await expect(decidedAction).toContainText("abgelehnt");
+  await expect(decidedAction).toContainText("Entscheidung fachlich geprüft");
 });

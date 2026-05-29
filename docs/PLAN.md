@@ -37,6 +37,8 @@ The codebase currently contains:
 - Mandate readiness gates for intake, drafts, sources, lawyer review and export.
 - A supervised deterministic agent layer with persisted runs, steps, findings
   and proposed actions.
+- A run-detail review screen where proposed agent actions are accepted or
+  rejected with a human review note, without automatic execution.
 - An administrator-only view of redacted operational audit events.
 - Automated browser regression checks for malformed development identity,
   role-gated audit visibility, source review and a full CASP drafting flow.
@@ -68,6 +70,8 @@ Client confidentiality and source provenance are product requirements:
    sources are still verified.
 11. Agents create findings and proposed actions only; they cannot verify
     sources, approve clauses, mutate templates or create packages.
+12. Agent action proposals require an explicit accept or reject decision with
+    a review note; the decision is stored and audited.
 
 ## Agent Model
 

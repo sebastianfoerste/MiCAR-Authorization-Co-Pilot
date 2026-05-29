@@ -72,6 +72,8 @@ The following controls are enforced in code:
   enter an export package.
 - Supervised agents can create findings and proposed actions, but they do not
   verify sources, approve clauses, mutate templates, or create packages.
+- Agent action proposals must be accepted or rejected with a documented review
+  note before they count as a human decision.
 - Administrators can review redacted operational events in the audit protocol.
 
 The source workflow is:
@@ -126,7 +128,8 @@ points requiring a lawyer's factual and legal completion before approval.
 
 The app includes a supervised deterministic agent layer for mandate operations.
 Agents run from the mandate cockpit and persist an auditable `agent_run` with
-steps, findings and proposed actions.
+steps, findings and proposed actions. Each run can be opened from the mandate
+page to inspect evidence and decide action proposals with a review note.
 
 Implemented agents:
 

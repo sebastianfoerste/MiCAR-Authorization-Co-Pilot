@@ -44,3 +44,4 @@ def test_agent_tables_register_review_gated_columns() -> None:
     assert "evidence" in tables["agent_findings"].columns
     assert "payload" in tables["agent_actions"].columns
     assert "decided_at" in tables["agent_actions"].columns
+    assert "decision_note" in tables["agent_actions"].columns

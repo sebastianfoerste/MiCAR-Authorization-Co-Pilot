@@ -321,9 +321,9 @@ export default async function MandatePage({
             {agentRuns.map((run) => (
               <li key={run.id} className="py-3 text-xs">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="font-medium">
+                  <Link href={`/mandates/${id}/agent-runs/${run.id}`} className="font-medium text-blue-700 underline">
                     {run.agent_key} · {run.status}
-                  </span>
+                  </Link>
                   <span className="text-neutral-500">{run.created_at.slice(0, 16).replace("T", " ")}</span>
                 </div>
                 <p className="mt-1 text-neutral-600">{run.result_summary ?? "Keine Zusammenfassung."}</p>

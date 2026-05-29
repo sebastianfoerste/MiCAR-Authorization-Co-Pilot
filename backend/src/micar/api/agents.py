@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, select
 
 from micar.agents.runtime import AGENT_DEFINITIONS, all_agent_catalog, execute_mandate_agent_run
@@ -37,6 +37,21 @@ class AgentRunCreateIn(BaseModel):
         "package_review",
         "template_improvement",
     ] = "all"
+
+
+class AgentActionDecisionIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["approved", "rejected"]
+    review_note: str = Field(min_length=20, max_length=2000)
+
+    @field_validator("review_note")
+    @classmethod
+    def normalize_review_note(cls, value: str) -> str:
+        cleaned = " ".join(value.split())
+        if len(cleaned) < 20:
+            raise ValueError("review_note must document the action decision")
+        return cleaned
 
 
 class AgentRunOut(BaseModel):
@@ -91,6 +106,7 @@ class AgentActionOut(BaseModel):
     created_at: datetime
     decided_by: int | None
     decided_at: datetime | None
+    decision_note: str | None
 
 
 class AgentRunDetailOut(BaseModel):
@@ -184,6 +200,38 @@ def get_mandate_agent_run(
     with session_scope() as session:
         load_accessible_mandate_or_404(session, mandate_id, user)
         return _run_detail_out(session, run_id, mandate_id)
+
+
+@router.post("/mandates/{mandate_id}/agent-actions/{action_id}/decision", response_model=AgentActionOut)
+def decide_agent_action(
+    mandate_id: int,
+    action_id: int,
+    body: AgentActionDecisionIn,
+    user: UserOut = Depends(get_current_user),
+) -> AgentActionOut:
+    with session_scope() as session:
+        mandate = load_accessible_mandate_or_404(session, mandate_id, user)
+        action = session.get(AgentAction, action_id)
+        if action is None or action.mandate_id != mandate.id:
+            raise HTTPException(status_code=404, detail="agent action not found")
+        if action.status != "proposed":
+            raise HTTPException(status_code=409, detail="agent action already decided")
+        action.status = body.decision
+        action.decided_by = user.id
+        action.decided_at = datetime.now(UTC)
+        action.decision_note = body.review_note
+        write_audit(
+            session,
+            kind="agent.action.decided",
+            actor_id=user.id,
+            mandate_id=mandate.id,
+            payload={
+                "action_id": action.id,
+                "action_type": action.action_type,
+                "decision": body.decision,
+            },
+        )
+        return AgentActionOut.model_validate(action)
 
 
 def _run_detail_out(session, run_id: int, mandate_id: int) -> AgentRunDetailOut:

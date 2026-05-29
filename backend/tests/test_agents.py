@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from micar.agents.runtime import AGENT_DEFINITIONS, draft_quality_findings_for_clause
+from micar.api.agents import AgentActionDecisionIn
 
 
 def test_agent_catalog_covers_supervised_legal_workflow() -> None:
@@ -54,3 +55,12 @@ def test_draft_qa_blocks_empty_uncited_clause() -> None:
         "Antrag: kein Entwurfstext",
         "Antrag: keine Zitate",
     }
+
+
+def test_agent_action_decision_requires_review_note() -> None:
+    body = AgentActionDecisionIn(
+        decision="rejected",
+        review_note="  Entscheidung geprüft, derzeit nicht sinnvoll umzusetzen.  ",
+    )
+
+    assert body.review_note == "Entscheidung geprüft, derzeit nicht sinnvoll umzusetzen."
