@@ -1,6 +1,6 @@
 # MiCAR Authorization Co-Pilot
 
-Internal prototype for producing review-gated MiCAR authorisation drafting
+Technical prototype for producing review-gated MiCAR authorisation drafting
 materials. The present implementation supports CASP, asset-referenced token
 (ART) and e-money token (EMT) intake workflows with structural draft templates
 for all documents declared in the three track catalogues.
@@ -147,3 +147,7 @@ cd frontend && npx playwright install chromium
 
 No client matter should be processed externally until the required professional,
 confidentiality and processing approvals have been documented.
+
+## License
+
+MIT.
