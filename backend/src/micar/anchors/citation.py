@@ -1,6 +1,6 @@
-"""Canonical citation rendering per the gunnercooke house style.
+"""Canonical citation rendering for MiCAR drafting templates.
 
-Rules (from ~/.claude/legal-voice.md):
+Rules:
   * Include Absatz / Satz / Nr. whenever the norm structure allows.
   * Include Randnummer (Rn.) for judicial decisions.
   * Distinguish Level 1 (Regulation / Directive), Level 2 (RTS / ITS / delegated
