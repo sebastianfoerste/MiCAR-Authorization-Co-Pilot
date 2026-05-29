@@ -20,9 +20,9 @@ required_sections:
 # by the renderer (stub mode does literal substitution; LLM mode is instructed to
 # fill in concrete prose grounded in the facts and anchors).
 #
-# Lawyer-author note (Sebastian): bracketed instructions remain in the rendered
-# output if the LLM cannot replace them — that is by design. A red bracket in
-# the DOCX means "review here before sending."
+# Lawyer-author note: bracketed instructions remain in the rendered output if the
+# LLM cannot replace them — that is by design. A red bracket in the DOCX means
+# "review here before sending."
 prose_skeleton: |
   ## 1. Geschäftsleitung
 
@@ -30,7 +30,7 @@ prose_skeleton: |
   über eine Geschäftsleitung mit {{ fact:governance.management_body_members }} Mitgliedern.
   Sitz der Hauptverwaltung: {{ fact:entity.place_of_central_admin }}.
 
-  [Hier füllt das gunnercooke-Team die fachliche Eignung der Geschäftsleiter entlang
+  [Hier füllt das Review-Team die fachliche Eignung der Geschäftsleiter entlang
    Art. 68 Abs. 1 MiCAR und der geprüften gemeinsamen EBA/ESMA-Leitlinien aus;
    Vorlage ist die fact-zugelieferte Kurzbeschreibung:
    {{ fact:governance.management_body_qualifications }}.]
@@ -42,13 +42,13 @@ prose_skeleton: |
   - 2. Linie: Risikomanagement und Compliance
   - 3. Linie: interne Revision
 
-  [Hier füllt das gunnercooke-Team die konkrete Ausgestaltung anhand des
+  [Hier füllt das Review-Team die konkrete Ausgestaltung anhand des
    beigefügten Organigramms aus. Verweis auf Art. 68 Abs. 7 MiCAR (Trennung
    der Kontrollfunktionen).]
 
   ## 3. Auslagerung
 
-  [Hier füllt das gunnercooke-Team die Auslagerungsrichtlinie entlang
+  [Hier füllt das Review-Team die Auslagerungsrichtlinie entlang
    Art. 73 MiCAR aus. Zu adressieren: kritische Funktionen, Dienstleisterregister
    und Aufsichtszugriff. Zusätzliche DORA-Aussagen erfordern geprüfte DORA-Anker.]
 
@@ -63,8 +63,7 @@ prose_skeleton: |
 
 author_note: |
   Lawyer review required before any client-facing render. Prose skeleton is structural;
-  Sebastian or the assigned partner finalises before sign-off. Hard-stop: every
-  bracketed [Hier füllt ...] block must be replaced or explicitly retained with
-  a documented reason.
+  the assigned lawyer finalises before sign-off. Hard-stop: every bracketed
+  [Hier füllt ...] block must be replaced or explicitly retained with a documented reason.
 
 conditional_on_services: []
