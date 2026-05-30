@@ -1,6 +1,6 @@
 # Copyright notice
 
-Copyright (c) Sebastian Foerste.
+Copyright (c) Alex Vance.
 
 All rights reserved.
 

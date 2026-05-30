@@ -176,3 +176,19 @@ confidentiality and processing approvals have been documented.
 ## License
 
 MIT.
+
+
+## ⚠️ System Disclaimers & Regulatory Compliance
+
+### 1. Decoupled AI Architecture
+This system is structured as an autonomous multi-agent pipeline using Large Language Models (LLMs) to automate processing, information retrieval, and synthesis. It functions via a decoupled architecture consisting of specialized agent personas (e.g., scoring, profiling, outreach drafts, translation) communicating asynchronously.
+
+### 2. Operational Limits & Hallucinations
+- **Accuracy Constraints**: Output generation is subject to LLM limitations. This includes potential hallucinations, logical inconsistencies, and processing lag.
+- **Data Latency**: Vector store updates and local database states are updated periodically and do not reflect real-time regulatory or institutional shifts.
+
+### 3. Mandatory Human-in-the-Loop Review
+**CRITICAL**: Under no circumstances should any raw output (including client profiles, generated LinkedIn posts, email sequences, or automated outreach drafts) be sent, published, or finalized without thorough human validation. The operator retains sole responsibility for reviewing and verifying the accuracy and appropriateness of all generated artifacts.
+
+### 4. No Legal Advice Framing
+**This software does not provide legal representation or binding legal counsel.** All synthesized analyses, regulatory scans, contract clause comparisons, and case triage scores are for administrative automation and operational assistance only. This tool is not a licensed attorney, does not operate as a law firm, and does not establish any attorney-client relationship. Operators must consult qualified legal professionals for binding advice or representation.
