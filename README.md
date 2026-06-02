@@ -1,19 +1,6 @@
 # MiCAR Authorization Co-Pilot
 
-Technical prototype for producing review-gated MiCAR authorisation drafting
-materials. The present implementation supports CASP, asset-referenced token
-(ART) and e-money token (EMT) intake workflows with structural draft templates
-for all documents declared in the three track catalogues.
-
-The application does not certify current BaFin practice and does not produce a
-filing-ready application without lawyer review. Regulatory text must be fetched
-from an official source and approved in the anchor library before any external
-model synthesis can run.
-
-The architecture is transferable beyond MiCAR: verified sources, scoped access,
-redaction, audit trails, agent findings and human-approved export gates are the
-same controls an AI-native SaaS legal function needs for product launches,
-privacy reviews, customer commitments and evidence-backed approvals.
+MiCAR Authorization Co-Pilot is a full-stack prototype for producing review-gated MiCAR authorisation drafting materials across the CASP, ART and EMT tracks. The same controls it enforces, namely verified sources, scoped access, redaction, audit trails, supervised agent findings and lawyer-approved export gates, are what an AI-native SaaS legal function needs for product launches, privacy reviews and evidence-backed approvals. It does not produce a filing-ready application without lawyer review, and regulatory text must be fetched from an official source and approved before any external model synthesis runs.
 
 For scope, current limits and the next implementation stages, see
 [`docs/PLAN.md`](docs/PLAN.md). For a reviewer-friendly launch runbook, see
