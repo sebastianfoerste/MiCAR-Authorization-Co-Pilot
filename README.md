@@ -2,9 +2,7 @@
 
 MiCAR Authorization Co-Pilot is a full-stack prototype for producing review-gated MiCAR authorisation drafting materials across the CASP, ART and EMT tracks. The same controls it enforces, namely verified sources, scoped access, redaction, audit trails, supervised agent findings and lawyer-approved export gates, are what an AI-native SaaS legal function needs for product launches, privacy reviews and evidence-backed approvals. It does not produce a filing-ready application without lawyer review, and regulatory text must be fetched from an official source and approved before any external model synthesis runs.
 
-For scope, current limits and the next implementation stages, see
-[`docs/PLAN.md`](docs/PLAN.md). For a reviewer-friendly launch runbook, see
-[`docs/launch-readiness.md`](docs/launch-readiness.md).
+For scope, current limits and the next implementation stages, see [`docs/PLAN.md`](docs/PLAN.md).
 
 ## Stack
 
